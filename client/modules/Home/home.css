@@ -1,0 +1,378 @@
+
+/* Style the tab */
+.tab {
+  float: left;
+  background-color: #2f3d45;
+  width: 100%;
+  height: calc(100vh - 50px);
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  display: block;
+  background-color: inherit;
+  color: white;
+  padding: 16px 16px;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: rgb(30, 43, 52);
+}
+
+/* Create an active/current "tab button" class */
+.tab button.active {
+  background-color: rgb(39, 52, 62);
+}
+.tabActive {
+  background-color: rgb(39, 52, 62) !important;
+}
+/* Style the tab content */
+.tabContent {
+  float: left;
+  padding: 0 12px;
+  width: 70%;
+  height: 300px;
+}
+
+
+.pricingHeader h2 {
+  font-weight: 400;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.pricingHeader {
+  height: auto;
+  pointer-events: auto;
+  text-align: center;
+  color: #173d50;
+  background-color: transparent;
+}
+
+.exclusive .pricingHeader {
+  color: #1bbc9d;
+  background-color: transparent;
+}
+
+.pricingHeader h2 {
+  font-size: 2.8rem;
+  letter-spacing: 2px;
+}
+
+.currency,
+.value {
+  font-size: 3rem;
+  font-weight: 300;
+}
+
+.duration {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: white;
+  text-transform: uppercase;
+}
+.exclusive .duration {
+  color: #f3b6ab;
+}
+.duration::before {
+  content: '/';
+  margin-right: 2px;
+}
+.currency,
+.duration {
+  color: white;
+}
+.currency {
+  display: inline-block;
+  vertical-align: top;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.exclusive .currency,
+.exclusive .duration {
+  color: white;
+}
+
+.pricingFooter {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 70px;
+  width: 100%;
+}
+
+.pricingFooter {
+  position: relative;
+  padding: 1.3em 0 0 0;
+  text-align: center;
+}
+
+.pricingFooter::after {
+  display: none;
+}
+
+.has-margins .pricingFooter {
+  padding-bottom: 0;
+}
+
+.select {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  text-indent: 100%;
+  white-space: nowrap;
+  color: transparent;
+}
+
+.select {
+  position: static;
+  display: inline-block;
+  height: auto;
+  padding: 1.3em 2em;
+  color: #1bbc9d;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  text-indent: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all .6s;
+  width: 70%;
+}
+.no-touch .select:hover {
+  background-color: #1bbc9d;
+  color: #ffffff;
+}
+
+.exclusive .select {
+  background-color: #1bbc9d;
+  color: #ffffff;
+}
+
+.no-touch .exclusive .select:hover {
+  background-color: #24e0ba;
+}
+
+.secondary-theme .exclusive .select {
+  background-color: #1bbc9d;
+}
+
+.no-touch .secondary-theme .exclusive .select:hover {
+  background-color: #112e3c;
+}
+
+.has-margins .select {
+  display: block;
+  padding: 1.7em 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.pricingWrapper {
+  position: relative;
+}
+
+.touch .pricingWrapper {
+  -webkit-perspective: 2000px;
+  -moz-perspective: 2000px;
+  perspective: 2000px;
+}
+
+.pricingWrapper.is-switched .is-visible {
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
+  -ms-transform: rotateY(180deg);
+  -o-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+  -webkit-animation: rotate 0.5s;
+  -moz-animation: rotate 0.5s;
+  animation: rotate 0.5s;
+}
+
+.pricingWrapper.is-switched .is-hidden {
+  -webkit-transform: rotateY(0);
+  -moz-transform: rotateY(0);
+  -ms-transform: rotateY(0);
+  -o-transform: rotateY(0);
+  transform: rotateY(0);
+  -webkit-animation: rotate-inverse 0.5s;
+  -moz-animation: rotate-inverse 0.5s;
+  animation: rotate-inverse 0.5s;
+  opacity: 0;
+}
+
+.pricingWrapper.is-switched .is-selected {
+  opacity: 1;
+}
+
+.pricingWrapper.is-switched.reverse-animation .is-visible {
+  -webkit-transform: rotateY(-180deg);
+  -moz-transform: rotateY(-180deg);
+  -ms-transform: rotateY(-180deg);
+  -o-transform: rotateY(-180deg);
+  transform: rotateY(-180deg);
+  -webkit-animation: rotate-back 0.5s;
+  -moz-animation: rotate-back 0.5s;
+  animation: rotate-back 0.5s;
+}
+
+.pricingWrapper.is-switched.reverse-animation .is-hidden {
+  -webkit-transform: rotateY(0);
+  -moz-transform: rotateY(0);
+  -ms-transform: rotateY(0);
+  -o-transform: rotateY(0);
+  transform: rotateY(0);
+  -webkit-animation: rotate-inverse-back 0.5s;
+  -moz-animation: rotate-inverse-back 0.5s;
+  animation: rotate-inverse-back 0.5s;
+  opacity: 0;
+}
+
+.pricingWrapper.is-switched.reverse-animation .is-selected {
+  opacity: 1;
+}
+
+.pricingWrapper > li {
+  background-color: #ffffff;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  outline: 1px solid transparent;
+}
+
+.pricingWrapper > li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 50px;
+  pointer-events: none;
+  background: -webkit-linear-gradient( right , #ffffff, rgba(255, 255, 255, 0));
+  background: linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0));
+}
+
+.pricingWrapper > li.is-ended::after {
+  display: none;
+}
+
+.pricingWrapper .is-visible {
+  position: relative;
+  z-index: 5;
+}
+
+.pricingWrapper .is-hidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
+  -ms-transform: rotateY(180deg);
+  -o-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+
+.pricingWrapper .is-selected {
+  z-index: 3 !important;
+}
+
+.listTitle {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 10px;
+  text-transform: uppercase;
+  font-size: 12pt;
+}
+.item {
+  background-color: rgb(39, 52, 62);
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-bottom: 3px;
+}
+.itemBorderLeft {
+  border-left: 3px solid rgb(51, 199, 23);
+}
+.itemBorderRight {
+  border-right: 3px solid rgb(255, 105, 57);
+}
+.tabs {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 100000;
+}
+.tabs > div {
+  background-color: rgb(39, 52, 62) !important;
+}
+.tabs > div > button {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* Style the tab */
+.orderPlacerTab {
+  background-color: rgba(186, 186, 186, 0.31);
+  width: 100%;
+}
+
+/* Style the buttons inside the tab */
+.orderPlacerTab button {
+  display: block;
+  background-color: inherit;
+  color: white;
+  padding: 16px 16px;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.orderPlacerTab button:nth-child(1):hover {
+  background-color: rgb(51, 199, 23) !important;
+}
+.orderPlacerTab button:nth-child(2):hover {
+  background-color: rgb(255, 105, 57) !important;
+}
+
+/* Create an active/current "tab button" class */
+.orderPlacerTab button:nth-child(1).active {
+  background-color: rgb(51, 199, 23) !important;
+}
+.orderPlacerTab button:nth-child(2).active {
+  background-color: rgb(255, 105, 57) !important;
+}
+
+.orderPlacerTabBuyActive {
+  background-color: rgb(51, 199, 23) !important;
+}
+.orderPlacerTabSellActive {
+  background-color: rgb(255, 105, 57) !important;
+}
+/* Style the tab content */
+.orderPlacerTabContent {
+  float: left;
+  padding: 0 12px;
+  width: 70%;
+  height: 300px;
+}
+.bankDropDown {
+  width: 100%
+}

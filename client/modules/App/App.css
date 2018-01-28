@@ -1,0 +1,16 @@
+.container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.size18 { font-size: 18px; }
+.materialIcons.md18 { font-size: 18px; }
+.material-icons.md24 { font-size: 24px; }
+.material-icons.md36 { font-size: 36px; }
+.material-icons.md48 { font-size: 48px; }
+.bannerEdit {
+  background-position: top left;
+  float:left;
+}
+html,body {
+  height: 100%;
+}

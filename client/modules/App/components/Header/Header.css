@@ -1,0 +1,13 @@
+.headerStyle{
+  border: none;
+  background-color: rgb(39, 52, 62);
+  margin-bottom: 0;
+  border-radius: 0;
+  border-left:0;
+  border-right:0;
+  border-top:0;
+  z-index: 1000;
+}
+.headerStyle * {
+  color: white !important;
+}

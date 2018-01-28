@@ -1,0 +1,41 @@
+.main * {
+  color: rgb(206, 210, 187);
+}
+.textColor {
+  color: rgb(206, 210, 187);
+}
+.textCenter {
+  text-align: center;
+}
+.textBox {
+  background-color: #404a52;
+  color: white;
+}
+.table {
+  color: white;
+}
+.table > td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+  font-weight: normal;
+}
+.tableTitle {
+  background-color: #f7931a;
+  color: white;
+  padding: 8px;
+}
+.clockTitle {
+  display: table;
+  margin: 8px 0;
+  text-align: center;
+}
+.clock {
+  margin: 15px 0;
+  text-align: center;
+  display: table;
+  font-size: 65px;
+}
+.clockBanner {
+  background-color: rgba(255, 62, 16, 0.56);
+}
