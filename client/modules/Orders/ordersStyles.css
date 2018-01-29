@@ -1,0 +1,14 @@
+.uploadLabel:hover {
+  cursor: pointer;
+}
+
+.table {
+  color: black;
+  width: 100%;
+}
+.table > td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+  font-weight: normal;
+}

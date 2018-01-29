@@ -3,8 +3,116 @@ import Rate from '../models/rate';
 import MarketOrder from '../models/marketOrder';
 import numeral from 'numeral';
 import randomstring from 'randomstring';
-import { secondPhase } from '../routes/socket_routes/chat_socket';
+import fs from 'fs-extra';
+import imagemin from 'imagemin';
+import imageminJpegtran from 'imagemin-jpegtran';
+import imageminPngquant from 'imagemin-pngquant';
+import cuid from 'cuid';
+import { secondPhase, updateMarketOrders } from '../routes/socket_routes/chat_socket';
 
+function writeImage(base64image) {
+  return new Promise((resolve, reject) => {
+    const ext = base64image.split(';')[0].match(/jpeg|png|gif/)[0];
+    const data = base64image.replace(/^data:image\/\w+;base64,/, '');
+    const buf = new Buffer(data, 'base64');
+    const date = Date.now();
+    const srcImageName = `${date.toString()}_${cuid()}`;
+    fs.writeFile(`public/${srcImageName}.${ext}`, buf)
+      .then(() => {
+        imagemin([`public/${srcImageName}.${ext}`], './public', {
+          plugins: [
+            imageminJpegtran(),
+            imageminPngquant({ quality: '70-80' }),
+          ],
+        })
+          .then(files => {
+            const imageName = `${date.toString()}_${cuid()}`;
+            fs.writeFile(`public/${imageName}.${ext}`, files[0].data)
+              .then(() => {
+                fs.unlink(`public/${srcImageName}.${ext}`)
+                  .then(() => {
+                    resolve(`${imageName}.${ext}`);
+                  })
+                  .catch((error3) => {
+                    reject(error3);
+                  })
+              })
+              .catch((error2) => {
+                reject(error2);
+              });
+          })
+          .catch((errorImagemin) => {
+            reject(errorImagemin);
+          })
+      })
+      .catch((error1) => {
+        reject(error1);
+      });
+  });
+}
+export function third(req, res) {
+  const reqMarketOrder = req.body.market;
+  if (reqMarketOrder &&
+      reqMarketOrder.hasOwnProperty('userId') &&
+      reqMarketOrder.hasOwnProperty('id') &&
+      reqMarketOrder.hasOwnProperty('imageBase64')
+  ) {
+    User.findOne({ _id: reqMarketOrder.userId }).exec((err, user) => {
+      if (err) {
+        res.json({ market: 'error' });
+      } else {
+        if (!user) {
+          res.json({ market: 'error' });
+        } else {
+          writeImage(reqMarketOrder.imageBase64)
+            .then((ret) => {
+              MarketOrder.findOneAndUpdate(
+                {
+                  _id: reqMarketOrder.id,
+                  stage: 'second',
+                },
+                {
+                  stage: 'third',
+                  evidenceDir: ret,
+                },
+                {new: true}
+              )
+                .populate('createUser', 'userName')
+                .populate('userId', 'userName addresses')
+                .populate('bank', 'name')
+                .exec((err2, market) => {
+                  if (err2) {
+                    res.json({ market: 'not ready' });
+                  } else {
+                    if (market) {
+                      let response = market;
+                      const address = response.userId.addresses.filter((add) => {
+                        return add.coin === market.coin;
+                      })[0];
+                      response.userId.addresses = {
+                        coin: market.coin,
+                        address: address.address,
+                      };
+                      res.json({market: response});
+                    } else {
+                      res.json({ market: 'not ready' });
+                    }
+                  }
+                });
+            })
+            .catch((reject) => {
+              res.json({ market: 'error' });
+            })
+        }
+      }
+    });
+  } else {
+    res.json({ market: 'missing' });
+  }
+}
+export function done(req, res) {
+  const reqMarketOrder = req.body.market;
+}
 export function first(req, res) {
   const reqMarketOrder = req.body.market;
   if (reqMarketOrder && reqMarketOrder.hasOwnProperty('id') ) {
@@ -175,6 +283,10 @@ export function createMarketOrder(req, res) {
       if (err) {
         res.json({ market: 'error' });
       } else {
+        const message = {
+          coin: reqMarketOrder.coin,
+        };
+        updateMarketOrders(message);
         res.json({ market: 'success' });
       }
     });

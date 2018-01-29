@@ -19,6 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }));
   app.use(webpackHotMiddleware(compiler));
 }
+app.use('/public', Express.static('./public'));
 
 // React And Redux Setup
 import { configureStore } from '../client/store';

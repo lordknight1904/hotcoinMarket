@@ -23,7 +23,7 @@ module.exports = {
     loaders: [
       {
         test: /\.css$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(react-bootstrap|react-image-crop|react-tag-autocomplete)\/).*/,
         loader: 'style-loader!css-loader?localIdentName=' + cssModulesIdentName + '&modules&importLoaders=1&sourceMap!postcss-loader',
       },
       {

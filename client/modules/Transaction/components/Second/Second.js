@@ -18,6 +18,9 @@ class Second extends Component {
     this.setState({ time: new Date() });
     this.timer = setInterval(this.tick, 1000);
   }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
   tick = () => {
     this.setState({ time: new Date() });
   };

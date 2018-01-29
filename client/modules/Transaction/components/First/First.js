@@ -41,11 +41,11 @@ class First extends Component {
       this.props.dispatch(setNotify('Số lượng phải lớn hơn 0'));
       return;
     }
-    if (t.type === 'buy' && this.state.accountNumber !== '') {
+    if (t.type === 'buy' && this.state.accountNumber === '') {
       this.props.dispatch(setNotify('Vui lòng điền số tài khoản'));
       return;
     }
-    if (t.type === 'buy' && this.state.accountName !== '') {
+    if (t.type === 'buy' && this.state.accountName === '') {
       this.props.dispatch(setNotify('Vui lòng điền tên chủ tài khoản'));
       return;
     }
@@ -68,7 +68,7 @@ class First extends Component {
   render() {
     const transaction = this.props.transaction;
     if (!transaction.hasOwnProperty('type')) return <div></div>;
-    const bool = transaction.type === 'buy';
+    const typeBool = transaction.type === 'buy';
     const rate = this.props.rates[this.props.coin];
     const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
     return (
@@ -79,7 +79,7 @@ class First extends Component {
               <Form horizontal>
                 <FormGroup controlId="balanceForm">
                   <Col sm={6}>
-                    <Button onClick={this.onClick} block>{bool ? 'Bán' : 'Mua'}</Button>
+                    <Button onClick={this.onClick} block>{typeBool ? 'Bán' : 'Mua'}</Button>
                   </Col>
                   <Col sm={6}>
                     <FormControl className={tStyles.textBox} type="text" value={this.state.amount} onChange={this.onAmount} autoComplete="off" placeholder="Số lượng"/>
@@ -88,7 +88,7 @@ class First extends Component {
                 <FormGroup controlId="priceForm">
                   <Col sm={6}>
                     {
-                      bool ? (
+                      typeBool ? (
                         <FormControl className={tStyles.textBox} type="text" value={this.state.accountNumber} onChange={this.onAccountNumber} autoComplete="off" placeholder="Số tài khoản của bạn"/>
                       ) : (
                         <FormControl className={tStyles.textBox} type="text" disabled autoComplete="off" placeholder="Địa chỉ của bạn"/>
@@ -97,7 +97,7 @@ class First extends Component {
                   </Col>
                   <Col sm={6}>
                     {
-                      bool ? (
+                      typeBool ? (
                         <FormControl className={tStyles.textBox} type="text" value={this.state.accountName} onChange={this.onAccountName} autoComplete="off" placeholder="Tên chủ tài khoản"/>
                       ) : ''
                     }
@@ -115,7 +115,7 @@ class First extends Component {
               </div>
               <table className={tStyles.table}>
                 <tr>
-                  <th>{bool ? 'Bán cho' : 'Mua từ'}</th>
+                  <th>{typeBool ? 'Bán cho' : 'Mua từ'}</th>
                   <th>{transaction.createUser ? transaction.createUser.userName : ''}</th>
                 </tr>
                 <tr>
@@ -123,7 +123,7 @@ class First extends Component {
                   <th>{`${numeral(numeral(transaction.rate).value() * last).format('0,0')} VNĐ/${transaction.coin}`}</th>
                 </tr>
                 <tr>
-                  <th>{`Số tiền ${!bool ? 'chuyển' : 'nhận'}`}</th>
+                  <th>{`Số tiền ${!typeBool ? 'chuyển' : 'nhận'}`}</th>
                   <th>{`${numeral(numeral(transaction.rate).value() * last * numeral(this.state.amount).value()).format('0,0')} VNĐ/${transaction.coin}`}</th>
                 </tr>
                 <tr>
@@ -135,7 +135,7 @@ class First extends Component {
                   <th>{`Chuyển khoản ngân hàng ${transaction.bank ? transaction.bank.name : ''}`}</th>
                 </tr>
                 {
-                  !bool ? (
+                  !typeBool ? (
                     <tr>
                       <th>Số tài khoản</th>
                       <th>{transaction.accountNumber}</th>
@@ -143,7 +143,7 @@ class First extends Component {
                   ) : ''
                 }
                 {
-                  !bool ? (
+                  !typeBool ? (
                     <tr>
                       <th>Tên chủ tài khoản</th>
                       <th>{transaction.accountName}</th>

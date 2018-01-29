@@ -40,11 +40,10 @@ class Home extends Component {
       >
         <Tab label="Mua/bán" value={0} />
         <Tab label="Quản lý lệnh" value={1} />
-      </Tabs>\
+      </Tabs>
       <SwipeableViews
         index={this.state.slideIndex}
         onChangeIndex={this.handleChange}
-        style={{ marginTop: '-20px' }}
       >
         <div className="col-md-12 col-xs-12">
           <div className="row">

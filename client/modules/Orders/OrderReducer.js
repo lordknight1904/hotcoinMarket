@@ -13,6 +13,16 @@ const OrderReducer = (state = initialState, action) => {
   switch (action.type) {
     case ACTIONS.ADD_MY_TRADING:
       return { ...state, trading: action.market };
+    case ACTIONS.UPDATE_TRANSACTION_DETAIL:
+      const index  = state.trading.map((t, i) => {
+        if (t._id === action.transaction._id) {
+          return i;
+        }
+      });
+      return {
+        ...state,
+        trading: [...state.trading.slice(0, index), action.transaction, ...state.trading.slice(index + 1)],
+      };
     default:
       return state;
   }
