@@ -18,6 +18,7 @@ const marketOrderSchema = new Schema({
   bank: { type: Schema.Types.ObjectId, ref: 'Bank', require: true },
   // transactions: { type: Schema.Types.ObjectId, ref: 'Transaction' },
   evidenceDir: { type: 'String' },
+  txHash: { type: 'String' },
   dateCreated: { type: Date, default: Date.now },
   dateSecond: { type: Date },
 });

@@ -70,7 +70,6 @@ class Detail extends Component {
     const typeBool = detail.type === 'buy';
     const userBool = detail.createUser._id.toString() === this.props.id.toString();
     const bool = (userBool ? 1 : -1) * (typeBool ? 1 : -1);
-    console.log(bool);
     const coin = this.props.coinList.filter((c) => { return c.name === detail.coin; });
     const unit = (coin.length > 0) ? coin[0].unit : 0;
     const rate = this.props.rates[this.props.coin];
@@ -189,7 +188,9 @@ class Detail extends Component {
                     ) : (
                       <div style={{ height: '100%' }}>
                         <label className={detailStyles.uploadLabel} style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }}>
-                          Đã nhận chuyển khoản
+                          <div style={{ display: 'table-cell', verticalAlign: 'middle', paddingLeft: '10px' }}>
+                            <span>Đã nhận chuyển khoản</span>
+                          </div>
                         </label>
                       </div>
                     )

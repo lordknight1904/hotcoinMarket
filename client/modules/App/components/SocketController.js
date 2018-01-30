@@ -11,6 +11,7 @@ import { setSocket, updateRate } from '../AppActions';
 import { getSocket } from '../AppReducer';
 import ChatSocket from '../../../util/ChatSocket';
 import { getBuyMarket, getSellMarket, getMySellMarket, getMyBuyMarket } from '../../Home/HomeActions';
+import { updateTransactionDetail, getMyTradingMarket } from '../../Orders/OrderActions';
 
 export class SocketController extends Component {
   componentDidMount() {
@@ -28,6 +29,12 @@ export class SocketController extends Component {
             this.props.dispatch(getSellMarket(this.props.coin));
             this.props.dispatch(getMyBuyMarket(this.props.coin, this.props.userName));
             this.props.dispatch(getMySellMarket(this.props.coin, this.props.userName));
+            this.props.dispatch(getMyTradingMarket(this.props.coin, this.props.userName));
+            break;
+          }
+          case 'thirdPhase': {
+            console.log('thirdPhase');
+            this.props.dispatch(updateTransactionDetail(message.transaction));
             break;
           }
           case 'updateMarketList': {

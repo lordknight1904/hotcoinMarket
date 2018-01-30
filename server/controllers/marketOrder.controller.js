@@ -1,5 +1,6 @@
 import User from '../models/user';
 import Rate from '../models/rate';
+import Setting from '../models/setting';
 import MarketOrder from '../models/marketOrder';
 import numeral from 'numeral';
 import randomstring from 'randomstring';
@@ -8,7 +9,8 @@ import imagemin from 'imagemin';
 import imageminJpegtran from 'imagemin-jpegtran';
 import imageminPngquant from 'imagemin-pngquant';
 import cuid from 'cuid';
-import { secondPhase, updateMarketOrders } from '../routes/socket_routes/chat_socket';
+import { secondPhase, updateMarketOrders, thirdPhase } from '../routes/socket_routes/chat_socket';
+import * as btc from '../util/btc';
 
 function writeImage(base64image) {
   return new Promise((resolve, reject) => {
@@ -93,6 +95,12 @@ export function third(req, res) {
                         coin: market.coin,
                         address: address.address,
                       };
+                      const message = {
+                        idFrom: response.userId._id,
+                        idTo: response.createUser._id,
+                        transaction: market,
+                      };
+                      thirdPhase(message);
                       res.json({market: response});
                     } else {
                       res.json({ market: 'not ready' });
@@ -112,6 +120,62 @@ export function third(req, res) {
 }
 export function done(req, res) {
   const reqMarketOrder = req.body.market;
+  if (reqMarketOrder && reqMarketOrder.hasOwnProperty('id') && reqMarketOrder.hasOwnProperty('userId') ) {
+    User.findOne({ _id: reqMarketOrder.userId }).exec((err, user) => {
+      if (err) {
+        res.json({ market: 'not ready' });
+      } else {
+        if (user) {
+          MarketOrder
+            .findOne({ _id: reqMarketOrder.id })
+            .populate('createUser', 'addresses')
+            .populate('userId', 'addresses')
+            .exec((err2, market) => {
+            if (err2) {
+              res.json({ market: 'not ready' });
+            } else {
+              if (market) {
+                if (market.stage === 'second') {
+                  res.json({ market: 'Người mua chưa đăng bằng chứng chuyển khoản.' });
+                  return;
+                }
+                if (market.stage === 'third') {
+                  let api = {};
+                  switch (market.coin) {
+                    case 'BTC': {
+                      api = btc;
+                      break;
+                    }
+                    default:
+                      res.json({ market: 'Sàn chưa hỗ trợ đồng này.'});
+                      return;
+                  }
+                  Setting.find((errSetting, setting) => {
+                    if (errSetting) {
+                      return;
+                    } else {
+                      let feeNetwork = setting.filter(set => {return set.name === `feeNetwork${market.coin}`;});
+                      let feeUsdt = setting.filter(set => {return set.name === 'feeUsdt'; });
+                      let feeCoin = setting.filter(set => {return set.name === `feeCoin${market.coin}`;});
+                      let addressCoin =  setting.filter(set => {return set.name === `addressCoin${market.coin}`;});
+
+                      if (feeNetwork.length === 0) return;
+                      if (feeUsdt.length === 0) return;
+                      if (feeCoin.length === 0) return;
+                      if (addressCoin.length === 0) return;
+                      api.send(market, addressCoin, feeCoin, feeNetwork);
+                    }
+                  });
+                }
+              }
+            }
+          });
+        } else {
+          res.json({ market: 'not ready' });
+        }
+      }
+    })
+  }
 }
 export function first(req, res) {
   const reqMarketOrder = req.body.market;

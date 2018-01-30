@@ -1,5 +1,5 @@
 import bcypher from 'blockcypher';
-
+import User from '../models/user';
 const bcapi = new bcypher('bcy', 'test', 'bfb3f2a39e264f90a596afd2853edb10');
 
 import bigi from 'bigi';
@@ -7,6 +7,8 @@ import bigi from 'bigi';
 import bitcoin from 'bitcoinjs-lib';
 import buffer from 'buffer';
 import Order from '../models/order';
+import async from 'async';
+import numeral from 'numeral';
 
 
 export function getHash(txHash) {
@@ -103,6 +105,39 @@ export function getHold(id) {
 // create transaction, sign and send to the network
 // userFrom -> userTo
 //
+function findUsers(market, callback) {
+  async.parallel({
+    userFrom: (cb) => { User.findOne({ _id: market.createUser._id }).exec(cb); },
+    userTo: (cb) => { User.findOne({ _id: market.userId._id }).exec(cb); }
+  }, (err, result) => {
+    callback(err, result.userFrom, result.userTo);
+  });
+}
+export function send(market, addressCoin, feeTrade, feeNetwork) {
+  return new Promise((resolve, reject) => {
+    findUsers(market, (err, userFrom, userTo) => {
+      if (err) {
+
+      } else {
+        const amount = market.amount;
+        if (amount < 7000) return;
+        if (amount < 4000000) {
+          microTransaction(userFrom, userTo, market, addressCoin, feeTrade, feeNetwork)
+            .catch((err) => {
+              reject(err);
+            })
+            .then(data => resolve(data));
+          return;
+        }
+        normalTransaction(userFrom, userTo, market, addressCoin, feeTrade, feeNetwork)
+          .catch((err) => {
+            reject(err);
+          })
+          .then(data => resolve(data))
+      }
+    });
+  });
+}
 export function transactionWithFee(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork) {
   return new Promise((resolve, reject) => {
     const amount = (orderSell.amountRemain <= orderBuy.amountRemain) ? orderSell.amountRemain : orderBuy.amountRemain;
