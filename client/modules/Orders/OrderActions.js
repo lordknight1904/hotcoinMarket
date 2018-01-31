@@ -36,3 +36,10 @@ export function marketThird(market) {
     });
   };
 }
+export function marketDone(market) {
+  return () => {
+    return callApi('market/done', 'post', '', {market}).then(res => {
+      return res;
+    });
+  };
+}

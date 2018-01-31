@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import homeStyles from '../../../Home/home.css';
-import { changeCoin } from '../../AppActions';
-import { getCoin, getRates } from '../../AppReducer';
+import {changeCoin, fetchLatest, setLatest} from '../../AppActions';
+import { getCoin, getRates, getLatest } from '../../AppReducer';
 import numeral from 'numeral';
 
 class Coin extends Component {
@@ -14,11 +14,14 @@ class Coin extends Component {
   }
   render() {
     const rate = this.props.rates[this.props.name];
-    const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : '~';
+    const latest = this.props.latest[this.props.name];
+    const last = (rate && rate.hasOwnProperty('last')) ? numeral(numeral(rate.last).value() * numeral(latest.rate).value()).foramt('0,0')  : '~';
     return (
       <button
         className={`${this.props.coin === this.props.name ? homeStyles.tabActive : ''}`}
-        onClick={() => this.props.dispatch(changeCoin(this.props.name))}
+        onClick={() => {
+          this.props.dispatch(changeCoin(this.props.name));
+        }}
       >
         <div className="col-md-2 col-xs-2">
           <div className="row">
@@ -41,6 +44,7 @@ function mapStateToProps(state) {
   return {
     coin: getCoin(state),
     rates: getRates(state),
+    latest: getLatest(state),
   };
 }
 Coin.propTypes = {
@@ -48,6 +52,7 @@ Coin.propTypes = {
   name: PropTypes.string.isRequired,
   coin: PropTypes.string.isRequired,
   rates: PropTypes.object.isRequired,
+  latest: PropTypes.object.isRequired,
 };
 Coin.contextTypes = {
   router: React.PropTypes.object,

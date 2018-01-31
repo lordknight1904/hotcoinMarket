@@ -24,6 +24,15 @@ export function updateMarketOrders(message) {
     io.to(socket).emit('updateMarketList', { code: 'updateMarketList', coin: message.coin });
   }
 }
+export function donePhase(message) {
+  for (const socket in connections) {
+    if (connections[socket].userID.toString() === message.idFrom.toString() ||
+      connections[socket].userID.toString() === message.idTo.toString()
+    ) {
+      io.to(socket).emit('donePhase', { code: 'donePhase', coin: message.coin });
+    }
+  }
+}
 export function thirdPhase(message) {
   for (const socket in connections) {
     if (connections[socket].userID.toString() === message.idFrom.toString() ||

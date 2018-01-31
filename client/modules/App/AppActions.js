@@ -15,6 +15,7 @@ export const ACTIONS = {
   SET_CHAT_SOCKET: 'SET_CHAT_SOCKET',
   LOGOUT: 'LOGOUT',
   UPDATE_RATE: 'UPDATE_RATE',
+  SET_LATEST: 'SET_LATEST',
 };
 
 export function logout() {
@@ -115,5 +116,20 @@ export function setSocket(socketIO) {
   return {
     type: ACTIONS.SET_CHAT_SOCKET,
     socketIO
+  };
+}
+export function setLatest(market) {
+  return {
+    type: ACTIONS.SET_LATEST,
+    market
+  };
+}
+export function fetchLatest(coin) {
+  return (dispatch) => {
+    return callApi(`marketlatest/${coin}`, 'get', '' ).then(res => {
+      if (res.rate) {
+        dispatch(setLatest(res.market));
+      }
+    });
   };
 }

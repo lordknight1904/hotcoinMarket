@@ -19,8 +19,22 @@ class First extends Component {
     };
   }
   onAmount = (event) => {
+    const count = (event.target.value.match(/\./g) || []).length;
     const number = numeral(event.target.value).format('0,0.[000000]');
-    this.setState({ amount: number });
+    switch (count) {
+      case 0: {
+        this.setState({ amount: number });
+        break;
+      }
+      case 1: {
+        this.setState({ amount: event.target.value });
+        break;
+      }
+      default: {
+        this.setState({ amount: number });
+        break;
+      }
+    }
   };
   onAddress = (event) => {
     this.setState({ address: event.target.value });

@@ -1,0 +1,17 @@
+.pHover:hover {
+  text-decoration: underline;
+  color: red;
+}
+.pHover {
+  color: blue;
+}
+.tableStripped > tbody> tr:nth-child(even) {
+  background-color: rgba(9, 186, 193, 0.38) !important;
+  color: white !important;
+}
+.table {
+  padding-top: 20px;
+}
+.table > thead {
+  color: white;
+}

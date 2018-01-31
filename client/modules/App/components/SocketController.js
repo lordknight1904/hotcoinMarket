@@ -7,11 +7,13 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
 import { getId, getUserName, getCoin } from '../../App/AppReducer';
-import { setSocket, updateRate } from '../AppActions';
+import { setSocket, updateRate, getBalance } from '../AppActions';
 import { getSocket } from '../AppReducer';
 import ChatSocket from '../../../util/ChatSocket';
 import { getBuyMarket, getSellMarket, getMySellMarket, getMyBuyMarket } from '../../Home/HomeActions';
 import { updateTransactionDetail, getMyTradingMarket } from '../../Orders/OrderActions';
+import { getTransaction } from "../../Transaction/TransactionReducer";
+import { setTransaction } from "../../Transaction/TransactionActions";
 
 export class SocketController extends Component {
   componentDidMount() {
@@ -33,8 +35,16 @@ export class SocketController extends Component {
             break;
           }
           case 'thirdPhase': {
-            console.log('thirdPhase');
             this.props.dispatch(updateTransactionDetail(message.transaction));
+            if (this.props.transaction._id === message.transaction._id) {
+              this.props.dispatch(setTransaction(message.transaction));
+            }
+            break;
+          }
+          case 'donePhase': {
+            console.log('donePhase');
+            this.props.dispatch(getMyTradingMarket(this.props.coin, this.props.userName));
+            this.props.dispatch(getBalance(this.props.userName, message.coin));
             break;
           }
           case 'updateMarketList': {
@@ -97,6 +107,7 @@ function mapStateToProps(state) {
   return {
     id: getId(state),
     userName: getUserName(state),
+    transaction: getTransaction(state),
     coin: getCoin(state),
     socketIO: getSocket(state),
   };

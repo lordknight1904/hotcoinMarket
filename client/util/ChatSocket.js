@@ -37,6 +37,9 @@ export default class ChatSocket {
     this.socket.on('thirdPhase', (message) => {
       callback(message);
     });
+    this.socket.on('donePhase', (message) => {
+      callback(message);
+    });
     this.socket.on('updateMarketList', (message) => {
       callback(message);
     });

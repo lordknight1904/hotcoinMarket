@@ -9,9 +9,20 @@ import imagemin from 'imagemin';
 import imageminJpegtran from 'imagemin-jpegtran';
 import imageminPngquant from 'imagemin-pngquant';
 import cuid from 'cuid';
-import { secondPhase, updateMarketOrders, thirdPhase } from '../routes/socket_routes/chat_socket';
+import { secondPhase, updateMarketOrders, thirdPhase, donePhase } from '../routes/socket_routes/chat_socket';
 import * as btc from '../util/btc';
 
+export function getLatestRate(req, res) {
+  MarketOrder.find({  })
+    .exec((err, market) => {
+    if (err) {
+      res.json({ latest: { coin: req.params.coin, rate: 1 } });
+    } else {
+      console.log(market);
+      res.json({ latest: { coin: req.params.coin, rate: market[0].rate } });
+    }
+  })
+}
 function writeImage(base64image) {
   return new Promise((resolve, reject) => {
     const ext = base64image.split(';')[0].match(/jpeg|png|gif/)[0];
@@ -163,7 +174,29 @@ export function done(req, res) {
                       if (feeUsdt.length === 0) return;
                       if (feeCoin.length === 0) return;
                       if (addressCoin.length === 0) return;
-                      api.send(market, addressCoin, feeCoin, feeNetwork);
+                      api.send(market, addressCoin, feeCoin, feeNetwork)
+                        .catch((errSend) => {
+                          res.json({ market: 'error' });
+                        })
+                        .then((ret) => {
+                          MarketOrder.findOneAndUpdate(
+                            { _id: reqMarketOrder.id },
+                            { stage: 'done', txHash: ret.txHash, fee: ret.fee },
+                            { new: true },
+                          ).exec((err3, market2) => {
+                            if (err3) {
+                              res.json({ market: 'error' });
+                            } else {
+                              const message = {
+                                idFrom: market.userId._id,
+                                idTo: market.createUser._id,
+                                coin: market.coin,
+                              };
+                              donePhase(message);
+                              res.json({ market: market2 });
+                            }
+                          });
+                        })
                     }
                   });
                 }
@@ -223,6 +256,17 @@ export function second(req, res) {
             length: 5,
             charset: 'numeric'
           });
+          let unit = 0;
+          switch (market.coin) {
+            case 'BTC': {
+              unit = 100000000;
+              break;
+            }
+            case 'ETH': {
+              unit = 1000000000000000000;
+              break;
+            }
+          }
           Rate.findOne({ coin: market.coin }).exec((err3, rate) => {
             if (err3) {
               res.json({ market: 'not ready' });
@@ -237,7 +281,7 @@ export function second(req, res) {
                     {
                       stage: 'second',
                       userId: reqMarketOrder.userId,
-                      amount: numeral(reqMarketOrder.amount).value(),
+                      amount: numeral(reqMarketOrder.amount).value() * unit,
                       dateSecond: Date.now(),
                       transferCode: `${prefix}${subfix}`,
                       transferRate: rate.last
@@ -272,7 +316,7 @@ export function second(req, res) {
                     {
                       stage: 'second',
                       userId: reqMarketOrder.userId,
-                      amount: numeral(reqMarketOrder.amount).value(),
+                      amount: numeral(reqMarketOrder.amount).value() * unit,
                       dateSecond: Date.now(),
                       transferCode: `${prefix}${subfix}`,
                       transferRate: rate.last,

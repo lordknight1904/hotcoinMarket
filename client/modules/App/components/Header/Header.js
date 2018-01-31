@@ -90,7 +90,7 @@ class Header extends Component {
             ) : (
               <Nav pullRight onSelect={this.handleUser}>
                 <NavItem eventKey="orders">Danh sách giao dịch đang thực hiện</NavItem>
-                <NavItem eventKey="walet">Tổng hợp ví</NavItem>
+                <NavItem eventKey="wallet">Tổng hợp ví</NavItem>
                 <NavDropdown title={this.props.userName} id="basic-nav-dropdown">
                   <MenuItem eventKey="profile">Profile</MenuItem>
                   <MenuItem divider />

@@ -11,7 +11,7 @@ import numeral from 'numeral';
 import { setNotify } from '../../../App/AppActions';
 import { getUserName, getId, getRates, getCoin, getCoinList } from '../../../App/AppReducer';
 import detailStyles from '../../ordersStyles.css';
-import { marketThird } from '../../../Orders/OrderActions';
+import { marketThird, marketDone } from '../../../Orders/OrderActions';
 
 const styles = {
   chip: {
@@ -32,6 +32,7 @@ class Detail extends Component {
     this.state = {
       time: {},
       start: new Date(),
+      isSubmitting: false,
     };
   }
 
@@ -64,6 +65,21 @@ class Detail extends Component {
         console.log(res);
       });
     };
+  };
+  onPay = () => {
+    if (this.state.isSubmitting) {
+      this.props.dispatch(setNotify('Lệnh đang được xử lý'));
+      return;
+    }
+    const market = {
+      id: this.props.detail._id,
+      userId: this.props.id,
+    };
+    this.setState({ isSubmitting: true });
+    this.props.dispatch(marketDone(market)).then((res) => {
+      this.setState({ isSubmitting: false });
+      console.log(res);
+    })
   };
   render() {
     const detail = this.props.detail;
@@ -187,7 +203,7 @@ class Detail extends Component {
                       </div>
                     ) : (
                       <div style={{ height: '100%' }}>
-                        <label className={detailStyles.uploadLabel} style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }}>
+                        <label className={detailStyles.uploadLabel} style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }} onClick={this.onPay}>
                           <div style={{ display: 'table-cell', verticalAlign: 'middle', paddingLeft: '10px' }}>
                             <span>Đã nhận chuyển khoản</span>
                           </div>

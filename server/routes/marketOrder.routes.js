@@ -11,5 +11,6 @@ router.route('/market').delete(MarketOrderController.deleteOrder);
 router.route('/market/:coin/:type').get(MarketOrderController.getMarket);
 router.route('/market/open/:coin/:userName/:type').get(MarketOrderController.getMyMarket);
 router.route('/market/trading/:coin/:userName').get(MarketOrderController.getMyTradingMarket);
+router.route('/marketlatest/:coin').get(MarketOrderController.getLatestRate);
 
 export default router;

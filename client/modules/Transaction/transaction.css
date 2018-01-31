@@ -39,3 +39,6 @@
 .clockBanner {
   background-color: rgba(255, 62, 16, 0.56);
 }
+.uploadLabel:hover {
+  cursor: pointer;
+}

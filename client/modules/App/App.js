@@ -22,8 +22,8 @@ injectTapEventPlugin();
 import homeStyles from '../Home/home.css';
 import Coin from './components/Coin/Coin';
 import {  Modal } from 'react-bootstrap';
-import { getIsNotify, getMessage } from '../App/AppReducer';
-import { closeNotify, fetchBanks, fetchRate } from '../App/AppActions';
+import { getIsNotify, getMessage, getCoin } from '../App/AppReducer';
+import { closeNotify, fetchBanks, fetchRate, fetchLatest } from '../App/AppActions';
 
 export class App extends Component {
   constructor(props) {
@@ -39,6 +39,10 @@ export class App extends Component {
     this.props.dispatch(fetchRate('ETH'));
     this.props.dispatch(fetchRate('LTC'));
     this.props.dispatch(fetchRate('DASH'));
+    this.props.dispatch(fetchLatest('BTC'));
+    this.props.dispatch(fetchLatest('ETH'));
+    this.props.dispatch(fetchLatest('LTC'));
+    this.props.dispatch(fetchLatest('DASH'));
   }
 
   onHide = () => {
@@ -106,6 +110,7 @@ App.propTypes = {
   dispatch: PropTypes.func.isRequired,
   isNotify: PropTypes.bool.isRequired,
   message: PropTypes.string.isRequired,
+  coin: PropTypes.string.isRequired,
 };
 
 // Retrieve data from store as props
@@ -113,6 +118,7 @@ function mapStateToProps(store) {
   return {
     isNotify: getIsNotify(store),
     message: getMessage(store),
+    coin: getCoin(store),
   };
 }
 

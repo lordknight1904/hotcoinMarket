@@ -23,6 +23,8 @@ const initialState = {
     { name: 'USDT', unit: 100000, fee: 50000 },
     { name: 'BTC', unit: 100000000, fee: 50000 },
     { name: 'ETH', unit: 1000000000000000000, fee: 0 },
+    { name: 'LTC', unit: 100000000, fee: 50000 },
+    { name: 'DASH', unit: 100000000, fee: 50000 },
   ],
 
   isSubmitting: false,
@@ -31,6 +33,7 @@ const initialState = {
   phone: '',
 
   rates: {},
+  latest: {},
   wallets: {},
 
   socketIO: {},
@@ -48,6 +51,14 @@ const AppReducer = (state = initialState, action) => {
         rates: {
           ...state.rates,
           [action.rate.coin]: action.rate
+        }
+      };
+    case ACTIONS.SET_LATEST:
+      return {
+        ...state,
+        latest: {
+          ...state.latest,
+          [action.latest.coin]: action.latest
         }
       };
     case ACTIONS.SET_CHAT_SOCKET:
@@ -98,6 +109,7 @@ const AppReducer = (state = initialState, action) => {
 
 /* Selectors */
 export const getBanks = state => state.app.banks;
+export const getLatest = state => state.app.latest;
 export const getIsNotify = state => state.app.isNotify;
 export const getMessage = state => state.app.message;
 export const getSignUp = state => state.app.isSignUp;

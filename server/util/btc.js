@@ -205,14 +205,14 @@ function normalTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, fe
     });
   });
 }
-function microTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork) {
+function microTransaction(userFrom, userTo, market, addressFee, feeTrade, feeNetwork) {
   return new Promise((resolve, reject) => {
-    const amount = (orderSell.amountRemain <= orderBuy.amountRemain) ? orderSell.amountRemain : orderBuy.amountRemain;
+    const amount = market.amount;
     const af = userFrom.addresses.filter((a) => {
-      return a.coin === orderSell.coin;
+      return a.coin === market.coin;
     });
     const at = userTo.addresses.filter((a) => {
-      return a.coin === orderBuy.coin;
+      return a.coin === market.coin;
     });
     const addressFrom = (af.length > 0) ? af[0] : [];
     const addressTo = (at.length > 0) ? at[0] : [];
@@ -225,7 +225,10 @@ function microTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, fee
       if (err) {
         reject('transactionError');
       } else {
-        if (data.hasOwnProperty('errors') || data.hasOwnProperty('error')) reject('transactionError');
+        if (data.hasOwnProperty('errors') || data.hasOwnProperty('error')) {
+          reject('transactionError');
+          return;
+        }
 
         let keys = null;
         keys = new bitcoin.ECPair(bigi.fromHex(addressFrom.private));
