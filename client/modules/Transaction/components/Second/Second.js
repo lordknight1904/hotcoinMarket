@@ -6,7 +6,7 @@ import tStyles from '../../transaction.css';
 import { getTransaction } from '../../TransactionReducer';
 import numeral from 'numeral';
 import { marketDone, marketThird } from "../../../Orders/OrderActions";
-import { getId } from '../../../App/AppReducer';
+import { getCoinList, getId, getRates, getSettings } from '../../../App/AppReducer';
 import { setNotify } from "../../../App/AppActions";
 
 class Second extends Component {
@@ -39,7 +39,7 @@ class Second extends Component {
     reader.readAsDataURL(file);
     reader.onloadend = (base64image) => {
       const market = {
-        id: this.props.detail._id,
+        id: this.props.transaction._id,
         userId: this.props.id,
         imageBase64: base64image.target.result,
       };
@@ -66,7 +66,7 @@ class Second extends Component {
         return;
       }
       this.props.dispatch(setNotify('Giao dịch đã hoàn thành'));
-      this.context.router.push('/');
+      this.props.handleNext();
     })
   };
   render() {
@@ -87,6 +87,22 @@ class Second extends Component {
 
     const timeStr = `${hours}:${minutes}:${seconds}`;
 
+    const coin = this.props.coinList.filter((c) => { return c.name === t.coin; });
+    const unit = (coin.length > 0) ? coin[0].unit : 0;
+
+    const rate = this.props.rates[t.coin];
+    const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
+    const minimumFeeCoinArr = this.props.settings.filter((s) => {return s.name === `minimumFee${t.coin.toUpperCase()}`;});
+    const minimumFeeCoin = minimumFeeCoinArr.length > 0 ? numeral(minimumFeeCoinArr[0].value).value() : 7000;
+
+    const feeArr = this.props.settings.filter((s) => {return s.name === 'feeCoin';});
+    const feeCoin = feeArr.length > 0 ? numeral(feeArr[0].value).value() : -1;
+
+    const init = numeral(last * numeral(this.state.rate).value() * numeral(this.state.max).value()).value();
+    const fee = (numeral(this.state.max).value() * feeCoin / 100) > minimumFeeCoin ?
+      (init * feeCoin) / 100 :
+      (numeral(last * numeral(this.state.rate).value() * numeral(minimumFeeCoin).value() / unit).value());
+    const value = init - fee;
     return (
       <div className="row">
         <div className="col-md-12 col-xs-12">
@@ -105,7 +121,7 @@ class Second extends Component {
           </div>
           <div className='col-md-12 col-xs-12' style={{ margin: 'auto', marginTop: '50px' }}>
             {
-              !bool ? (
+              !typeBool ? (
                 <div style={{ backgroundColor: 'red', padding: '10px 0' }}>
                   <label className={tStyles.uploadLabel} htmlFor="file-upload" style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }}>
                     <div style={{ display: 'table-cell', verticalAlign: 'middle', paddingLeft: '10px' }}>
@@ -157,18 +173,18 @@ class Second extends Component {
                   </tr>
                   <tr>
                     <th>{`Số tiền ${!typeBool ? 'chuyển' : 'nhận'}`}</th>
-                    <th>{`${numeral(numeral(t.rate).value() * numeral(t.transferRate).value() * numeral(t.amount).value()).format('0,0')} VNĐ/${t.coin}`}</th>
+                    <th>{`${numeral(value).format('0,0')} VNĐ(${feeCoin}% phí)`}</th>
                   </tr>
                   <tr>
                     <th>Lượng giới hạn</th>
-                    <th>{`${t.min} - ${t.max} ${t.coin}`}</th>
+                    <th>{`${t.min / unit} - ${t.max / unit} ${t.coin}`}</th>
                   </tr>
                   <tr>
                     <th>Phương thức thanh toán</th>
                     <th>Chuyển khoản ngân hàng Vietcombank</th>
                   </tr>
                   {
-                    !typeBool ? (
+                    bool ? (
                       <tr>
                         <th>Số tài khoản</th>
                         <th>{t.accountNumber}</th>
@@ -176,7 +192,7 @@ class Second extends Component {
                     ) : <tr></tr>
                   }
                   {
-                    !typeBool ? (
+                    bool ? (
                       <tr>
                         <th>Tên chủ tài khoản</th>
                         <th>{t.accountName}</th>
@@ -184,7 +200,7 @@ class Second extends Component {
                     ) : <tr></tr>
                   }
                   {
-                    typeBool ? (
+                    bool ? (
                       <tr>
                         <th>Địa chỉ ví người mua</th>
                         <th>jahsflhwjhoqds</th>
@@ -196,31 +212,24 @@ class Second extends Component {
                       </tr>
                     )
                   }
-                  {
-                    typeBool ? (
-                      <tr>
-                        <th>Bằng chứng chuyển khoản</th>
-                        <th>
-                          {
-                            t.hasOwnProperty('evidenceDir') ? (
-                              <div
-                                style={{
-                                  backgroundImage: `url(/public/${t.evidenceDir})`,
-                                  backgroundRepeat: 'no-repeat',
-                                  backgroundSize: 'contain',
-                                  width: '300px',
-                                  height: '400px',
-                                }}
-                              />
-                            ) : 'Chưa đang bằng chứng chuyển khoản'
-                          }
-                        </th>
-                      </tr>
-                    ) : (
-                      <tr>
-                      </tr>
-                    )
-                  }
+                  <tr>
+                    <th>Bằng chứng chuyển khoản</th>
+                    <th>
+                      {
+                        t.hasOwnProperty('evidenceDir') ? (
+                          <div
+                            style={{
+                              backgroundImage: `url(/public/${t.evidenceDir})`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundSize: 'contain',
+                              width: '300px',
+                              height: '400px',
+                            }}
+                          />
+                        ) : 'Chưa đang bằng chứng chuyển khoản'
+                      }
+                    </th>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -235,12 +244,19 @@ function mapStateToProps(state) {
   return {
     transaction: getTransaction(state),
     id: getId(state),
+    coinList: getCoinList(state),
+    settings: getSettings(state),
+    rates: getRates(state),
   };
 }
 
 Second.propTypes = {
+  handleNext: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
   transaction: PropTypes.object.isRequired,
+  rates: PropTypes.object.isRequired,
+  coinList: PropTypes.array.isRequired,
+  settings: PropTypes.array.isRequired,
   id: PropTypes.string.isRequired,
 };
 

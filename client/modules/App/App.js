@@ -23,7 +23,7 @@ import homeStyles from '../Home/home.css';
 import Coin from './components/Coin/Coin';
 import {  Modal } from 'react-bootstrap';
 import { getIsNotify, getMessage, getCoin } from '../App/AppReducer';
-import { closeNotify, fetchBanks, fetchRate, fetchLatest } from '../App/AppActions';
+import { closeNotify, fetchBanks, fetchRate, fetchLatest, fetchSettings } from '../App/AppActions';
 
 export class App extends Component {
   constructor(props) {
@@ -34,6 +34,7 @@ export class App extends Component {
 
   componentDidMount() {
     this.setState({isMounted: true}); // eslint-disable-line
+    this.props.dispatch(fetchSettings());
     this.props.dispatch(fetchBanks());
     this.props.dispatch(fetchRate('BTC'));
     this.props.dispatch(fetchRate('ETH'));

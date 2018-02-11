@@ -11,17 +11,35 @@ import imageminPngquant from 'imagemin-pngquant';
 import cuid from 'cuid';
 import { secondPhase, updateMarketOrders, thirdPhase, donePhase } from '../routes/socket_routes/chat_socket';
 import * as btc from '../util/btc';
+import * as rank from '../util/rank';
 
 export function getLatestRate(req, res) {
-  MarketOrder.find({  })
-    .exec((err, market) => {
-    if (err) {
-      res.json({ latest: { coin: req.params.coin, rate: 1 } });
-    } else {
-      console.log(market);
-      res.json({ latest: { coin: req.params.coin, rate: market[0].rate } });
+  MarketOrder.aggregate([
+    {
+      $match: {
+        stage: 'done',
+        coin: req.params.coin
+      }
+    },
+    { $sort : { dateDone : -1 } },
+    {
+      $group: {
+        _id: '$type',
+        min: { $first: "$rate" },
+        max: { $first: "$rate" }
+      }
     }
-  })
+    ]).exec((err, market) => {
+      if (err) {
+        res.json({ latest: { coin: req.params.coin, min: 22675, max: 22675 } });
+      } else {
+        const sellArr = market.filter((m) => { return m._id === 'sell'});
+        const buyArr = market.filter((m) => { return m._id === 'buy'});
+        const min =  sellArr.length > 0 ? sellArr[0].min : 22675;
+        const max =  buyArr.length > 0 ? buyArr[0].max : 22675;
+        res.json({ latest: { coin: req.params.coin, min, max } });
+      }
+    })
 }
 function writeImage(base64image) {
   return new Promise((resolve, reject) => {
@@ -87,8 +105,9 @@ export function third(req, res) {
                 {
                   stage: 'third',
                   evidenceDir: ret,
+                  dateThird: Date.now(),
                 },
-                {new: true}
+                { new: true }
               )
                 .populate('createUser', 'userName')
                 .populate('userId', 'userName addresses')
@@ -112,6 +131,8 @@ export function third(req, res) {
                         transaction: market,
                       };
                       thirdPhase(message);
+                      console.log('here');
+                      rank.rankUser(market);
                       res.json({market: response});
                     } else {
                       res.json({ market: 'not ready' });
@@ -168,20 +189,22 @@ export function done(req, res) {
                       let feeNetwork = setting.filter(set => {return set.name === `feeNetwork${market.coin}`;});
                       let feeUsdt = setting.filter(set => {return set.name === 'feeUsdt'; });
                       let feeCoin = setting.filter(set => {return set.name === `feeCoin${market.coin}`;});
+                      let minimumFeeCoin = setting.filter(set => {return set.name === `minimumFee${market.coin.toUpperCase()}`;});
                       let addressCoin =  setting.filter(set => {return set.name === `addressCoin${market.coin}`;});
 
                       if (feeNetwork.length === 0) return;
+                      if (minimumFeeCoin.length === 0) return;
                       if (feeUsdt.length === 0) return;
                       if (feeCoin.length === 0) return;
                       if (addressCoin.length === 0) return;
-                      api.send(market, addressCoin, feeCoin, feeNetwork)
+                      api.send(market, addressCoin[0].value, feeCoin, minimumFeeCoin[0].value, feeNetwork)
                         .catch((errSend) => {
                           res.json({ market: 'error' });
                         })
                         .then((ret) => {
                           MarketOrder.findOneAndUpdate(
                             { _id: reqMarketOrder.id },
-                            { stage: 'done', txHash: ret.txHash, fee: ret.fee },
+                            { stage: 'done', txHash: ret.txHash, txHashFee: ret.txHashFee, feeNetwork: ret.feeNetwork, feeTrade: ret.feeTrade, feeTradeAdmin: ret.feeTradeAdmin, dateDone: Date.now() },
                             { new: true },
                           ).exec((err3, market2) => {
                             if (err3) {
@@ -237,124 +260,177 @@ export function second(req, res) {
     reqMarketOrder.hasOwnProperty('amount') &&
     reqMarketOrder.hasOwnProperty('userId')
   ) {
-    MarketOrder.findOne({ _id: reqMarketOrder.id, stage: 'open' }).exec((err, market) => {
-      if (err) {
-        res.json({ market: 'not ready' });
+    Setting.find({}).exec((errSetting, setting) => {
+      if (errSetting) {
+        res.json({ market: 'error' });
       } else {
-        if (market) {
-          const message = {
-            coin: market.coin,
-            idFrom: market.createUser,
-            idTo: reqMarketOrder.userId,
-          };
-          const prefix = randomstring.generate({
-            length: 3,
-            charset: 'alphabetic',
-            capitalization: 'uppercase'
-          });
-          const subfix = randomstring.generate({
-            length: 5,
-            charset: 'numeric'
-          });
-          let unit = 0;
-          switch (market.coin) {
-            case 'BTC': {
-              unit = 100000000;
-              break;
-            }
-            case 'ETH': {
-              unit = 1000000000000000000;
-              break;
-            }
+        if (setting.length > 0) {
+          const feeArr = setting.filter((s) => {return s.name === 'feeCoin';});
+          if (feeArr.length === 0) {
+            res.json({ market: 'error' });
+            return;
           }
-          Rate.findOne({ coin: market.coin }).exec((err3, rate) => {
-            if (err3) {
+          MarketOrder.findOne({ _id: reqMarketOrder.id, stage: 'open' }).exec((err, market) => {
+            if (err) {
               res.json({ market: 'not ready' });
             } else {
-              if (rate) {
-                if (market.type === 'sell'){
-                  MarketOrder.findOneAndUpdate(
-                    {
-                      _id: reqMarketOrder.id,
-                      stage: 'open',
-                    },
-                    {
-                      stage: 'second',
-                      userId: reqMarketOrder.userId,
-                      amount: numeral(reqMarketOrder.amount).value() * unit,
-                      dateSecond: Date.now(),
-                      transferCode: `${prefix}${subfix}`,
-                      transferRate: rate.last
-                    },
-                    {new: true}
-                  )
-                    .populate('createUser', 'userName')
-                    .populate('userId', 'userName addresses')
-                    .populate('bank', 'name')
-                    .exec((err2, market2) => {
-                      if (err2) {
-                        res.json({market: 'not ready'});
-                      } else {
-                        secondPhase(message);
-                        let response = market2;
-                        const address = response.userId.addresses.filter((add) => {
-                          return add.coin === market.coin;
-                        })[0];
-                        response.userId.addresses = {
-                          coin: market.coin,
-                          address: address.address,
-                        };
-                        res.json({market: response});
-                      }
-                    });
-                } else {
-                  MarketOrder.findOneAndUpdate(
-                    {
-                      _id: reqMarketOrder.id,
-                      stage: 'open',
-                    },
-                    {
-                      stage: 'second',
-                      userId: reqMarketOrder.userId,
-                      amount: numeral(reqMarketOrder.amount).value() * unit,
-                      dateSecond: Date.now(),
-                      transferCode: `${prefix}${subfix}`,
-                      transferRate: rate.last,
-                      accountNumber: reqMarketOrder.accountNumber,
-                      accountName: reqMarketOrder.accountName,
-                    },
-                    {new: true}
-                  )
-                    .populate('createUser', 'userName')
-                    .populate('userId', 'userName addresses')
-                    .populate('bank', 'name')
-                    .exec((err2, market2) => {
-                      if (err2) {
-                        res.json({market: 'not ready'});
-                      } else {
-                        secondPhase(message);
-                        let response = market2;
-                        const address = response.userId.addresses.filter((add) => {
-                          return add.coin === market.coin;
-                        })[0];
-                        response.userId.addresses = {
-                          coin: market.coin,
-                          address: address.address,
-                        };
-                        res.json({market: response});
-                      }
-                    });
+              if (market) {
+                let unit = 0;
+                let api = {};
+                switch (market.coin) {
+                  case 'BTC': {
+                    unit = 100000000;
+                    api = btc;
+                    break;
+                  }
+                  case 'ETH': {
+                    unit = 1000000000000000000;
+                    // api = eth;
+                    break;
+                  }
                 }
+                if (reqMarketOrder.amount * unit < market.min || reqMarketOrder.amount * unit > market.max) {
+                  res.json({ market: 'Số lượng không phù hợp' });
+                  return;
+                }
+                const message = {
+                  coin: market.coin,
+                  idFrom: market.createUser,
+                  idTo: reqMarketOrder.userId,
+                };
+                const prefix = randomstring.generate({
+                  length: 3,
+                  charset: 'alphabetic',
+                  capitalization: 'uppercase'
+                });
+                const subfix = randomstring.generate({
+                  length: 5,
+                  charset: 'numeric'
+                });
+                Rate.findOne({ coin: market.coin }).exec((err3, rate) => {
+                  if (err3) {
+                    res.json({ market: 'not ready' });
+                  } else {
+                    if (rate) {
+                      if (market.type === 'sell'){
+                        MarketOrder.findOneAndUpdate(
+                          {
+                            _id: reqMarketOrder.id,
+                            stage: 'open',
+                          },
+                          {
+                            stage: 'second',
+                            userId: reqMarketOrder.userId,
+                            amount: numeral(reqMarketOrder.amount).value() * unit,
+                            dateSecond: Date.now(),
+                            transferCode: `${prefix}${subfix}`,
+                            transferRate: rate.last,
+                            fee: numeral(feeArr[0].value).value(),
+                          },
+                          {new: true}
+                        )
+                          .populate('createUser', 'userName')
+                          .populate('userId', 'userName addresses')
+                          .populate('bank', 'name')
+                          .exec((err2, market2) => {
+                            if (err2) {
+                              res.json({market: 'not ready'});
+                            } else {
+                              secondPhase(message);
+                              let response = market2;
+                              const address = response.userId.addresses.filter((add) => {
+                                return add.coin === market.coin;
+                              })[0];
+                              response.userId.addresses = {
+                                coin: market.coin,
+                                address: address.address,
+                              };
+                              res.json({market: response});
+                            }
+                          });
+                      } else {
+                        User.findOne({ _id: reqMarketOrder.userId }).exec((errUser, user) => {
+                          if (errUser) {
+                            res.json({ market: 'error' });
+                          } else {
+                            const address = user.addresses.filter((a) => {
+                              return a.coin === market.coin;
+                            });
+                            if (address.length === 0) {
+                              res.json({ market: 'error' });
+                              return;
+                            }
+                            api.getAddress(address[0].address)
+                              .catch(() => {
+                                res.json({ market: 'Không thể đặt lệnh' });
+                              })
+                              .then((data) => {
+                                api.getHold(user._id)
+                                  .catch(() => {
+                                    res.json({ market: 'error' });
+                                  })
+                                  .then((hold) => {
+                                    if (data.balance >= hold + numeral(reqMarketOrder.amount).value() * unit) {
+                                      MarketOrder.findOneAndUpdate(
+                                        {
+                                          _id: reqMarketOrder.id,
+                                          stage: 'open',
+                                        },
+                                        {
+                                          stage: 'second',
+                                          userId: reqMarketOrder.userId,
+                                          amount: numeral(reqMarketOrder.amount).value() * unit,
+                                          dateSecond: Date.now(),
+                                          transferCode: `${prefix}${subfix}`,
+                                          transferRate: rate.last,
+                                          accountNumber: reqMarketOrder.accountNumber,
+                                          accountName: reqMarketOrder.accountName,
+                                          fee: numeral(feeArr[0].value).value(),
+                                        },
+                                        {new: true}
+                                      )
+                                        .populate('createUser', 'userName')
+                                        .populate('userId', 'userName addresses')
+                                        .populate('bank', 'name')
+                                        .exec((err2, market2) => {
+                                          if (err2) {
+                                            res.json({market: 'not ready'});
+                                          } else {
+                                            secondPhase(message);
+                                            let response = market2;
+                                            const address = response.userId.addresses.filter((add) => {
+                                              return add.coin === market.coin;
+                                            })[0];
+                                            response.userId.addresses = {
+                                              coin: market.coin,
+                                              address: address.address,
+                                            };
+                                            res.json({market: response});
+                                          }
+                                        });
+                                    } else {
+                                      res.json({ market: `Không đủ ${reqMarketOrder.coin}` });
+                                    }
+                                  });
+                              });
+                          }
+                        });
+                      }
+                    } else {
+                      res.json({ market: 'not ready' });
+                    }
+                  }
+                });
               } else {
                 res.json({ market: 'not ready' });
               }
             }
-          });
+          })
         } else {
-          res.json({ market: 'not ready' });
+          res.json({ market: 'error' });
         }
       }
-    })
+    });
   } else {
     res.json({ market: 'not ready' });
   }
@@ -370,6 +446,18 @@ export function createMarketOrder(req, res) {
     reqMarketOrder.hasOwnProperty('max') &&
     reqMarketOrder.hasOwnProperty('coin')
   ) {
+    let api = {};
+    let unit = 0;
+    switch (reqMarketOrder.coin) {
+      case 'BTC': {
+        unit = 100000000;
+        api = btc;
+        break;
+      }
+      default:
+        res.json({ market: 'Sàn chưa hỗ trợ đồng này.'});
+        return;
+    }
     if (reqMarketOrder.type === 'sell') {
       if (!reqMarketOrder.hasOwnProperty('accountNumber') && !reqMarketOrder.hasOwnProperty('accountName')) {
         res.json({ market: 'error' });
@@ -381,23 +469,66 @@ export function createMarketOrder(req, res) {
       type: reqMarketOrder.type,
       rate: reqMarketOrder.rate,
       bank: reqMarketOrder.bank,
-      min: reqMarketOrder.min,
-      max: reqMarketOrder.max,
+      min: reqMarketOrder.min * unit,
+      max: reqMarketOrder.max * unit,
       accountNumber: (reqMarketOrder.type === 'sell') ? reqMarketOrder.accountNumber : '',
       accountName: (reqMarketOrder.type === 'sell') ? reqMarketOrder.accountName : '',
       coin: reqMarketOrder.coin,
     });
-    market.save((err) => {
-      if (err) {
-        res.json({ market: 'error' });
-      } else {
-        const message = {
-          coin: reqMarketOrder.coin,
-        };
-        updateMarketOrders(message);
-        res.json({ market: 'success' });
-      }
-    });
+    if (reqMarketOrder.type === 'sell') {
+      User.findOne({ _id: reqMarketOrder.createUser }).exec((err, user) => {
+        if (err) {
+          res.json({ market: 'error' });
+        } else {
+          if (user) {
+            const address = user.addresses.filter((a) => {
+              return a.coin === reqMarketOrder.coin;
+            });
+            api.getAddress(address[0].address)
+              .catch(() => {
+                res.json({ market: 'Không thể đặt lệnh' });
+              })
+              .then((data) => {
+              api.getHold(user._id)
+                .catch(() => {
+                  res.json({order: 'Không thể đặt lệnh'});
+                })
+                .then((hold) => {
+                  if (data.balance >= hold + Number(reqMarketOrder.max) * unit) {
+                    market.save((err) => {
+                      if (err) {
+                        res.json({ market: 'error' });
+                      } else {
+                        const message = {
+                          coin: reqMarketOrder.coin,
+                        };
+                        updateMarketOrders(message);
+                        res.json({ market: 'success' });
+                      }
+                    });
+                  } else {
+                    res.json({ market: `Không đủ ${reqMarketOrder.coin}` });
+                  }
+                });
+            });
+          } else {
+            res.json({ market: 'error' });
+          }
+        }
+      });
+    } else {
+      market.save((err) => {
+        if (err) {
+          res.json({ market: 'error' });
+        } else {
+          const message = {
+            coin: reqMarketOrder.coin,
+          };
+          updateMarketOrders(message);
+          res.json({ market: 'success' });
+        }
+      });
+    }
   } else {
     res.json({ market: 'missing inputs' });
   }
@@ -428,9 +559,10 @@ export function deleteOrder(req, res) {
   }
 }
 export function getMarket(req, res) {
+  const max = req.query.max ? numeral(req.query.max).value() : 0;
   MarketOrder
     .find(
-      { coin: req.params.coin, type: req.params.type, stage: 'open' },
+      { coin: req.params.coin, type: req.params.type, stage: 'open', max: { $gte : max } },
       {},
       {
         limit: 20,
@@ -485,23 +617,26 @@ export function getMyTradingMarket(req, res) {
             ],
             coin: req.params.coin,
           })
-          .populate('createUser', 'userName')
-          .populate('userId', 'userName addresses')
+          .populate('createUser', 'userName addresses.address')
+          .populate('userId', 'userName addresses.address')
           .populate('bank', 'name')
           .exec((err2, market) => {
             if (err2) {
               res.json({ market: [] });
             } else {
-              let response = market;
-              response = response.map((r) => {
-                const address = r.userId.addresses.filter((add) => { return add.coin === req.params.coin; })[0];
-                r.userId.addresses = {
-                  coin: market.coin,
-                  address: address.address,
-                };
-                return r;
-              });
-              res.json({ market: response });
+              // let response = market;
+              // response = response.map((r) => {
+              //   console.log(r.userId);
+              //   const address = r.userId.addresses.filter((add) => { return add.coin === req.params.coin; })[0];
+              //   if (!address) return;
+              //   r.userId.addresses = {
+              //     coin: market.coin,
+              //     address: address.address,
+              //   };
+              //   return r;
+              // });
+              console.log(market);
+              res.json({ market });
             }
           });
       } else {
@@ -510,3 +645,145 @@ export function getMyTradingMarket(req, res) {
     }
   });
 }
+
+export function send(req, res) {
+  const reqSend = req.body.send;
+  if (reqSend &&
+    reqSend.hasOwnProperty('id') &&
+    reqSend.hasOwnProperty('address') &&
+    reqSend.hasOwnProperty('amount') &&
+    reqSend.hasOwnProperty('coin')
+  ) {
+    User.findOne({ _id: reqSend.id }).exec((err, user) => {
+      if (err) {
+        res.json({ market: 'error' });
+      } else {
+        if (user) {
+          const address = user.addresses.filter(add => {return add.coin === reqSend.coin;} );
+          switch (reqSend.coin) {
+            case 'BTC': {
+              let bool = true;
+              btc.directTransfer(address[0].address, address[0].private, reqSend.address, Number(reqSend.amount)).catch((errors) => {
+                bool = false;
+                res.json({ market: 'error' });
+                return;
+              }).then((data) => {
+                if (bool) {
+                  const directHistory = {
+                    txHash: data,
+                    coin: reqSend.coin,
+                  };
+                  User.findOneAndUpdate(
+                    {_id: reqSend.id},
+                    {$push: {directHistory}},
+                    { upsert: true, new: true, setDefaultsOnInsert: true }
+                  ).exec((err2) => {
+                    if (err2) {
+                      res.json({market: 'missing'});
+                    } else {
+                      res.json({market: 'success'});
+                    }
+                  });
+                }
+              });
+              break;
+            }
+            case 'ETH': {
+
+              break;
+            }
+            default: {
+              res.json({ market: 'missing' });
+            }
+          }
+        } else {
+          res.json({ market: 'not found' });
+        }
+      }
+    });
+  } else {
+    res.json({ market: 'missing' });
+  }
+}
+export function getHistory(req, res) {
+  User.findOne({ userName: req.params.userName }).exec((err, user) => {
+    if (err) {
+      res.json({ history: [] });
+    } else {
+      if (user) {
+        MarketOrder
+          .find({ coin: req.params.coin })
+          .skip(20 * req.params.currentPage)
+          .limit(20)
+          .populate('createUser', 'userName')
+          .populate('userId', 'userName addresses')
+          .populate('bank', 'name')
+          .exec((err, history) => {
+            if (err) {
+              res.json({ history: [] });
+            } else {
+              res.json({ history });
+            }
+          })
+      } else {
+        res.json({ history: [] });
+      }
+    }
+  });
+}
+//
+// export function fee(req, res) {
+//   const reqMarket = req.body.market;
+//   if (reqMarket &&
+//     reqMarket.hasOwnProperty('id') &&
+//     reqMarket.hasOwnProperty('coin')
+//   ) {
+//     let api = {};
+//     switch (reqMarket.coin) {
+//       case 'BTC': {
+//         api = btc;
+//         break;
+//       }
+//       default:
+//         res.json({ market: 'Sàn chưa hỗ trợ đồng này.'});
+//         return;
+//     }
+//     User.findOne({ _id: reqMarket.userId }).exec((err, user) => {
+//       if (err) {
+//         res.json({ fee: 0 });
+//       } else {
+//         if (user) {
+//           MarketOrder.findOne({ _id: reqMarket.id }).exec((errMarket, market) => {
+//             if (errMarket) {
+//               res.json({ fee: 0 });
+//             } else {
+//               if (market) {
+//
+//                 const address1 = market.userId.addresses.filter((add) => {
+//                   return add.coin === market.coin;
+//                 })[0];
+//                 User.
+//                 const micro = {
+//                   from_pubkey: addressFrom.public,
+//                   to_address: addressTo.address,
+//                   value_satoshis: reqMarket.amount,
+//                 };
+//                 api.createMicro(micro, (err, data) => {
+//                   if (err) {
+//                     res.json({ fee: 0 });
+//                   } else {
+//                     res.json({ fee: data.fee });
+//                   }
+//                 })
+//               } else {
+//                 res.json({ fee: 0 });
+//               }
+//             }
+//           })
+//         } else {
+//           res.json({ fee: 0 });
+//         }
+//       }
+//     });
+//   }
+// }

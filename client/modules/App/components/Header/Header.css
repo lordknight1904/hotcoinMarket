@@ -8,6 +8,10 @@
   border-top:0;
   z-index: 1000;
 }
-.headerStyle * {
+.headerStyle > div > div > ul > li > a,
+.headerStyle > div > div > a{
   color: white !important;
+}
+.tagACursor:hover {
+  cursor: pointer;
 }

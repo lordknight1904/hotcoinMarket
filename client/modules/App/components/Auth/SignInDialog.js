@@ -40,7 +40,7 @@ class SignInDialog extends Component{
     this.props.dispatch(loginRequest(user)).then((res) => {
       this.setState({ isLoggingIn: false });
       if (res.user  === 'login fail') {
-        this.setState({ error: 'Unable to login.' });
+        this.setState({ error: 'Không thể đăng nhập' });
         return;
       }
       if (res.user  === 'googleAuth') {
@@ -61,36 +61,36 @@ class SignInDialog extends Component{
 
   handleEmail = (event) => {
     if (event.target.value.trim() === '') {
-      this.setState({ email: event.target.value.trim(), emailError: 'This field can not be empty.' });
+      this.setState({ email: event.target.value.trim(), emailError: 'Trường hợp này không thể trống.' });
     } else {
       if (this.validateEmail(event.target.value.trim())) {
         this.setState({ email: event.target.value.trim(), emailError: ''});
       } else {
-        this.setState({ email: event.target.value.trim(), emailError: 'This field can not be empty.' });
+        this.setState({ email: event.target.value.trim(), emailError: 'Định dạng email không đúng' });
       }
     }
   };
   handlePassword = (event) => {
     if (event.target.value.trim() === '') {
-      this.setState({ password: event.target.value.trim(), passwordError: 'This field can not be empty.' });
+      this.setState({ password: event.target.value.trim(), passwordError: 'Trường hợp này không thể trống.' });
     } else {
       this.setState({ password: event.target.value.trim(), passwordError: '' });
     }
   };
   handleEmailBlur = (event) => {
     if (event.target.value.trim() === '') {
-      this.setState({ emailError: 'This field can not be empty.'});
+      this.setState({ emailError: 'Trường hợp này không thể trống.'});
     } else {
       if (this.validateEmail(event.target.value.trim())) {
         this.setState({ emailError: ''});
       } else {
-        this.setState({ emailError: 'Invalid email format.'});
+        this.setState({ emailError: 'Định dạng email không đúng'});
       }
     }
   };
   handlePasswordBlur = (event) => {
     if (event.target.value.trim() === '') {
-      this.setState({ passwordError: 'This field can not be empty.'});
+      this.setState({ passwordError: 'Trường hợp này không thể trống.'});
     } else {
       this.setState({ passwordError: ''});
     }
@@ -116,19 +116,19 @@ class SignInDialog extends Component{
     this.props.dispatch(googleFactor(user)).then((res) => {
       this.setState({ isGoogling: false, googleCode: '' });
       if (res.user === 'error') {
-        this.setState({ error: 'Sign in error.' });
+        this.setState({ error: 'Lỗi đăng nhập' });
         return;
       }
       if (res.user === 'missing') {
-        this.setState({ error: 'Please provide information adequately.' });
+        this.setState({ error: 'Vui lòng cung cấp đầy đủ thông tin.' });
         return;
       }
       if (res.user === 'reject') {
-        this.setState({ error: 'Incorrect Google security code.' });
+        this.setState({ error: 'Mã bảo mật Google không chính xác.' });
         return;
       }
       if (res.user === 'not found') {
-        this.setState({ error: 'Do not found this account.' });
+        this.setState({ error: 'Không tìn thấy tài khoản này.' });
         return;
       }
       this.props.dispatch(login(res.user));

@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import homeStyles from '../../home.css';
+import detailStyles from '../../../Orders/ordersStyles.css';
 import { setNotify } from '../../../App/AppActions';
 import { getCoin, getId } from '../../../App/AppReducer';
 import { Tab, Row, Col, Nav, NavItem, Form, FormGroup, FormControl, DropdownButton, Button, MenuItem } from 'react-bootstrap';
 import numeral from 'numeral';
 import { createMarketOrder, getMySellMarket, getMyBuyMarket } from '../../HomeActions';
-import { getBanks, getUserName, getWallets, getCoinList, getRates } from '../../../App/AppReducer';
+import { getBanks, getUserName, getWallets, getCoinList, getRates, getSettings } from '../../../App/AppReducer';
 
 class CustomForm extends Component {
   constructor(props) {
@@ -126,21 +127,29 @@ class CustomForm extends Component {
       accountNumber: this.state.accountNumber,
     };
     this.props.dispatch(createMarketOrder(market)).then((res) => {
-      if (res.market === 'success') {
-        this.setState({
-          rate: '',
-          min: '',
-          max: '',
-          bank: '',
-          accountName: '',
-          accountNumber: '',
-          dropDownTitle: 'Chọn ngân hàng',
-        });
-        this.props.dispatch(setNotify('Đặt lệnh thành công'));
-        this.props.dispatch(getMyBuyMarket(this.props.coin, this.props.userName));
-        this.props.dispatch(getMySellMarket(this.props.coin, this.props.userName));
-      } else {
-        this.props.dispatch(setNotify('Đặt lệnh không thành công'));
+      switch (res.market) {
+        case 'success': {
+          this.setState({
+            rate: '',
+            min: '',
+            max: '',
+            bank: '',
+            accountName: '',
+            accountNumber: '',
+            dropDownTitle: 'Chọn ngân hàng',
+          });
+          this.props.dispatch(setNotify('Đặt lệnh thành công'));
+          this.props.dispatch(getMyBuyMarket(this.props.coin, this.props.userName));
+          this.props.dispatch(getMySellMarket(this.props.coin, this.props.userName));
+          break;
+        }
+        case 'error': {
+          this.props.dispatch(setNotify('Đặt lệnh không thành công'));
+          break;
+        }
+        default: {
+          this.props.dispatch(setNotify(res.market));
+        }
       }
     })
   };
@@ -154,74 +163,90 @@ class CustomForm extends Component {
     const balance = (this.props.id !== '') ? ((wallet) ? numeral(wallet.balance/unit).format('0,0.000000') : 'Đang tải') : 'Chưa đăng nhập';
     const rate = this.props.rates[this.props.coin];
     const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
+
+    const minimumFeeCoinArr = this.props.settings.filter((s) => {return s.name === `minimumFee${this.props.coin.toUpperCase()}`;});
+    const minimumFeeCoin = minimumFeeCoinArr.length > 0 ? numeral(minimumFeeCoinArr[0].value).value() : 7000;
+
+    const feeArr = this.props.settings.filter((s) => {return s.name === 'feeCoin';});
+    const feeCoin = feeArr.length > 0 ? numeral(feeArr[0].value).value() : -1;
+
+    const init = numeral(last * numeral(this.state.rate).value() * numeral(this.state.max).value()).value();
+    const fee = (numeral(this.state.max).value() * feeCoin / 100) > minimumFeeCoin ?
+      (init * feeCoin) / 100 :
+      (numeral(last * numeral(this.state.rate).value() * numeral(minimumFeeCoin).value() / unit).value());
+    const value = init - fee;
     return (
       <Form horizontal>
-        <Col md={11}>
-          <FormGroup>
-            <Col md={4}>
-              <FormControl id={`balanceForm${this.props.type}1`} type="text" value={balance} disabled placeholder="Số dư"/>
-            </Col>
-            <Col md={4}>
-              <FormControl id={`balanceForm${this.props.type}2`} type="text" autoComplete="off" value={this.state.min} onChange={this.onMin} placeholder="Tối thiểu" style={{ backgroundColor: '#404a52', color: 'white' }}/>
-            </Col>
-            <Col md={4}>
-              <FormControl id={`balanceForm${this.props.type}3`} type="text" autoComplete="off" value={this.state.max} onChange={this.onMax} placeholder="Tối đa" style={{ backgroundColor: '#404a52', color: 'white' }}/>
-            </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col md={4}>
-              <FormControl id={`priceForm${this.props.type}1`} type="text" placeholder={`${numeral(last).format('0,0')} USD`} disabled/>
-            </Col>
-            <Col md={4}>
-              <FormControl id={`priceForm${this.props.type}2`} type="text" autoComplete="off" value={this.state.rate} onChange={this.onRate} placeholder="VND/USD" style={{ backgroundColor: '#404a52', color: 'white' }}/>
-            </Col>
-            <Col md={4}>
-              <FormControl
-                id={`priceForm${this.props.type}3`}
-                type="text"
-                placeholder={`${numeral(last * numeral(this.state.rate).value() * numeral(this.state.max).value()).format('0,0')} VNĐ`}
-                disabled
-              />
-            </Col>
-          </FormGroup>
-          <FormGroup>
-            <Col md={4}>
-              <DropdownButton
-                title={this.state.dropDownTitle}
-                id={`bankDropDown${this.props.type}`}
-                onSelect={this.onSelect}
-                className={`dropdown btn-group ${homeStyles.bankDropDown}`}
-              >
+        <Row style={{ display: 'flex' }}>
+          <Col md={11} xs={11}>
+            <FormGroup>
+              <Col md={4}>
+                <FormControl className={homeStyles.disabledForm} id={`balanceForm${this.props.type}1`} type="text" value={balance} disabled placeholder="Số dư"/>
+              </Col>
+              <Col md={4} className={homeStyles.customInput}>
+                <FormControl id={`balanceForm${this.props.type}2`} type="text" autoComplete="off" value={this.state.min} onChange={this.onMin} placeholder="Tối thiểu"/>
+              </Col>
+              <Col md={4} className={homeStyles.customInput}>
+                <FormControl id={`balanceForm${this.props.type}3`} type="text" autoComplete="off" value={this.state.max} onChange={this.onMax} placeholder="Tối đa"/>
+              </Col>
+            </FormGroup>
+            <FormGroup>
+              <Col md={4}>
+                <FormControl className={homeStyles.disabledForm} id={`priceForm${this.props.type}1`} type="text" placeholder={`${numeral(last).format('0,0')} USD`} disabled/>
+              </Col>
+              <Col md={4} className={homeStyles.customInput}>
+                <FormControl id={`priceForm${this.props.type}2`} type="text" autoComplete="off" value={this.state.rate} onChange={this.onRate} placeholder="VND/USD"/>
+              </Col>
+              <Col md={4}>
+                <FormControl
+                  className={homeStyles.disabledForm}
+                  id={`priceForm${this.props.type}3`}
+                  type="text"
+                  placeholder={`${numeral(value).format('0,0')} VNĐ(${feeCoin}% phí)`}
+                  disabled
+                />
+              </Col>
+            </FormGroup>
+            <FormGroup>
+              <Col md={4} className={homeStyles.bankDropDown}>
+                <DropdownButton
+                  title={this.state.dropDownTitle}
+                  id={`bankDropDown${this.props.type}`}
+                  onSelect={this.onSelect}
+                >
+                  {
+                    this.props.banks.map((b, index) => (
+                      <MenuItem key={index} eventKey={b}>{b.name}</MenuItem>
+                    ))
+                  }
+                </DropdownButton>
+              </Col>
+              <Col md={4} className={homeStyles.customInput}>
                 {
-                  this.props.banks.map((b, index) => (
-                    <MenuItem key={index} eventKey={b}>{b.name}</MenuItem>
-                  ))
+                  (this.props.type === 'sell') ? (
+                      <FormControl type="text" placeholder="Số tài khoản" value={this.state.accountNumber} onChange={this.onAccountNumber}/>
+                    ) : ''
                 }
-              </DropdownButton>
-            </Col>
-            <Col md={4}>
-              {
-                (this.props.type === 'sell') ? (
-                    <FormControl type="text" placeholder="Số tài khoản" value={this.state.accountNumber} onChange={this.onAccountNumber}/>
-                  ) : ''
-              }
-            </Col>
-            <Col sm={4}>
-              {
-                (this.props.type === 'sell') ? (
-                    <FormControl type="text" placeholder="Tên chủ tài khoản" value={this.state.accountName} onChange={this.onAccountName}/>
-                  ) : ''
-              }
-            </Col>
-          </FormGroup>
-        </Col>
-        <Col md={1}>
-          <FormGroup>
-            <Col sm={12}>
-              <Button onClick={this.onClick}>Đặt</Button>
-            </Col>
-          </FormGroup>
-        </Col>
+              </Col>
+              <Col sm={4} className={homeStyles.customInput}>
+                {
+                  (this.props.type === 'sell') ? (
+                      <FormControl type="text" placeholder="Tên chủ tài khoản" value={this.state.accountName} onChange={this.onAccountName}/>
+                    ) : ''
+                }
+              </Col>
+            </FormGroup>
+          </Col>
+          <Col md={1} xs={1} style={{ paddingBottom: '15px' }}>
+            <Row style={{ backgroundColor: 'red', height: '100%' }}>
+              <label className={detailStyles.uploadLabel} style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }} onClick={this.onClick}>
+                <div style={{ display: 'table-cell', verticalAlign: 'middle', paddingLeft: '10px' }}>
+                  <span style={{ paddingLeft: '7px' }}>Đặt</span>
+                </div>
+              </label>
+            </Row>
+          </Col>
+        </Row>
       </Form>
     );
   }
@@ -235,6 +260,7 @@ function mapStateToProps(state) {
     wallets: getWallets(state),
     coinList: getCoinList(state),
     rates: getRates(state),
+    settings: getSettings(state),
   };
 }
 CustomForm.propTypes = {
@@ -246,6 +272,7 @@ CustomForm.propTypes = {
   wallets: PropTypes.object.isRequired,
   rates: PropTypes.object.isRequired,
   coinList: PropTypes.array.isRequired,
+  settings: PropTypes.array.isRequired,
 };
 Form.contextTypes = {
   router: React.PropTypes.object,

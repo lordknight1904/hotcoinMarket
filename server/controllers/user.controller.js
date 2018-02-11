@@ -386,7 +386,7 @@ export function getBalance(req, res) {
                     user: {
                       coin: sanitizeHtml(req.params.coin),
                       address: address[0].address,
-                      balance: data.final_balance - Number(hold),
+                      balance: data.balance - Number(hold),
                       unconfirmedBalance: data.unconfirmed_balance,
                       hold: Number(hold),
                       history: []
@@ -402,5 +402,67 @@ export function getBalance(req, res) {
         }
       }
     });
+  }
+}
+
+function writeImage(base64image) {
+  return new Promise((resolve, reject) => {
+    const ext = base64image.split(';')[0].match(/jpeg|png|gif/)[0];
+    const data = base64image.replace(/^data:image\/\w+;base64,/, '');
+    const buf = new Buffer(data, 'base64');
+    const date = Date.now();
+    const srcImageName = `${date.toString()}_${cuid()}`;
+    fs.writeFile(`public/${srcImageName}.${ext}`, buf, (err) => {
+      if (err) {
+        reject('error');
+      } else {
+        imagemin([`public/${srcImageName}.${ext}`], './public', {
+          plugins: [
+            imageminJpegtran(),
+            imageminPngquant({ quality: '70-80' }),
+          ],
+        }).then(files => {
+          const imageName = `${date.toString()}_${cuid()}`;
+          fs.writeFile(`public/${imageName}.${ext}`, files[0].data, (err2) => {
+            if (err2) {
+              reject('error');
+            } else {
+              fs.unlink(`public/${srcImageName}.${ext}`, (err) => {});
+              resolve(`${imageName}.${ext}`);
+            }
+          });
+        });
+      }
+    });
+  });
+}
+export function updateUserProfile(req, res) {
+  const reqProfile = req.body.profile;
+  if (reqProfile &&
+    reqProfile.hasOwnProperty('id') &&
+    reqProfile.hasOwnProperty('phone') &&
+    reqProfile.hasOwnProperty('imageSrc') &&
+    reqProfile.hasOwnProperty('realName')
+  ) {
+    const promises = [];
+    promises.push(writeImage(reqProfile.imageSrc));
+    Promise.all(promises).catch(() => {}).then((imageDirectories) => {
+      User.findOneAndUpdate(
+        { _id: reqProfile.id },
+        { realName: reqProfile.realName,
+          phone: reqProfile.phone,
+          isSubmitting: true,
+          imageDir: imageDirectories,
+        }
+      ).exec((err, user) => {
+        if (err) {
+          res.json({ profile: 'error' });
+        } else {
+          res.json({ profile: 'success' });
+        }
+      });
+    });
+  } else {
+    res.json({ profile: 'missing' });
   }
 }

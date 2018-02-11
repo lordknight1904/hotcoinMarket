@@ -6,7 +6,7 @@ import numeral from 'numeral';
 import tStyles from '../../transaction.css';
 import { getTransaction } from '../../TransactionReducer';
 import { marketSecond, setTransaction } from '../../TransactionActions';
-import { getId, getCoin, getRates } from '../../../App/AppReducer';
+import { getId, getCoin, getRates, getCoinList, getSettings } from '../../../App/AppReducer';
 import { setNotify } from '../../../App/AppActions';
 
 class First extends Component {
@@ -47,6 +47,8 @@ class First extends Component {
   };
   onClick = () => {
     const t = this.props.transaction;
+    const coin = this.props.coinList.filter((c) => { return c.name === t.coin; });
+    const unit = (coin.length > 0) ? coin[0].unit : 0;
     if (this.state.amount === '') {
       this.props.dispatch(setNotify('Vui lòng nhập vào số lượng'));
       return;
@@ -71,11 +73,21 @@ class First extends Component {
       amount: numeral(this.state.amount).value(),
     };
     this.props.dispatch(marketSecond(market)).then((res) => {
-      if (res !== 'not ready') {
-        this.props.dispatch(setTransaction(res));
-        this.props.handleNext();
-      } else {
-        this.props.dispatch(setNotify('Giao dịch đã được thực hiện bởi người khác'))
+      console.log(res);
+      switch (res) {
+        case 'error':
+        case 'not ready': {
+          this.props.dispatch(setNotify('Giao dịch đã được thực hiện bởi người khác'));
+          break;
+        }
+        case 'Số lượng không phù hợp': {
+          this.props.dispatch(setNotify(res.market));
+          break;
+        }
+        default: {
+          this.props.dispatch(setTransaction(res));
+          this.props.handleNext();
+        }
       }
     });
   };
@@ -83,8 +95,26 @@ class First extends Component {
     const transaction = this.props.transaction;
     if (!transaction.hasOwnProperty('type')) return <div></div>;
     const typeBool = transaction.type === 'buy';
+    const userBool = transaction.createUser._id.toString() === this.props.id.toString();
+    const bool = (userBool ? 1 : -1) * (typeBool ? 1 : -1);
     const rate = this.props.rates[this.props.coin];
     const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
+
+    const coin = this.props.coinList.filter((c) => { return c.name === transaction.coin; });
+    const unit = (coin.length > 0) ? coin[0].unit : 0;
+
+    const minimumFeeCoinArr = this.props.settings.filter((s) => {return s.name === `minimumFee${this.props.coin.toUpperCase()}`;});
+    const minimumFeeCoin = minimumFeeCoinArr.length > 0 ? numeral(minimumFeeCoinArr[0].value).value() : 7000;
+
+    const feeArr = this.props.settings.filter((s) => {return s.name === 'feeCoin';});
+    const feeCoin = feeArr.length > 0 ? numeral(feeArr[0].value).value() : -1;
+
+    const init = numeral(last * numeral(this.state.rate).value() * numeral(this.state.max).value()).value();
+    const fee = (numeral(this.state.max).value() * feeCoin / 100) > minimumFeeCoin ?
+      (init * feeCoin) / 100 :
+      (numeral(last * numeral(this.state.rate).value() * numeral(minimumFeeCoin).value() / unit).value());
+    const value = init - fee;
+
     return (
       <div className="row">
         <div className="col-md-6 col-xs-12">
@@ -138,11 +168,11 @@ class First extends Component {
                 </tr>
                 <tr>
                   <th>{`Số tiền ${!typeBool ? 'chuyển' : 'nhận'}`}</th>
-                  <th>{`${numeral(numeral(transaction.rate).value() * last * numeral(this.state.amount).value()).format('0,0')} VNĐ/${transaction.coin}`}</th>
+                  <th>{`${numeral(value).format('0,0')} VNĐ(${feeCoin}% phí)`}</th>
                 </tr>
                 <tr>
                   <th>Lượng giới hạn</th>
-                  <th>{`${transaction.min} - ${transaction.max} ${transaction.coin}`}</th>
+                  <th>{`${transaction.min / unit} - ${transaction.max / unit} ${transaction.coin}`}</th>
                 </tr>
                 <tr>
                   <th>Phương thức thanh toán</th>
@@ -178,7 +208,9 @@ function mapStateToProps(state) {
     transaction: getTransaction(state),
     id: getId(state),
     coin: getCoin(state),
+    coinList: getCoinList(state),
     rates: getRates(state),
+    settings: getSettings(state),
   };
 }
 
@@ -188,6 +220,8 @@ First.propTypes = {
   transaction: PropTypes.object.isRequired,
   coin: PropTypes.string.isRequired,
   rates: PropTypes.object.isRequired,
+  coinList: PropTypes.array.isRequired,
+  settings: PropTypes.array.isRequired,
   id: PropTypes.string.isRequired,
 };
 

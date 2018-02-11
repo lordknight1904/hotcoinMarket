@@ -36,6 +36,7 @@ import users from './routes/user.routes';
 import marketOrders from './routes/marketOrder.routes';
 import banks from './routes/bank.routes';
 import rates from './routes/rate.routes';
+import settings from './routes/setting.routes';
 // import dummyData from './dummyData';
 import serverConfig from './config';
 
@@ -59,7 +60,7 @@ app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(Express.static(path.resolve(__dirname, '../dist/client')));
 app.use(Express.static(path.resolve(__dirname, '../public/banner')));
-app.use('/api', [ marketOrders, banks, rates, users ]);
+app.use('/api', [ marketOrders, banks, rates, users, settings ]);
 
 // Render Initial HTML
 const renderFullPage = (html, initialState) => {
@@ -83,7 +84,7 @@ const renderFullPage = (html, initialState) => {
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="shortcut icon" href="http://res.cloudinary.com/hashnode/image/upload/v1455629445/static_imgs/mern/mern-favicon-circle-fill.png" type="image/png" />
       </head>
       <body style="height: 100%"  >

@@ -5,6 +5,7 @@
   background-color: #2f3d45;
   width: 100%;
   height: calc(100vh - 50px);
+  padding-top: 5px;
 }
 
 /* Style the buttons inside the tab */
@@ -65,8 +66,7 @@
 }
 
 .pricingHeader h2 {
-  font-size: 2.8rem;
-  letter-spacing: 2px;
+  font-size: 13px;
 }
 
 .currency,
@@ -302,11 +302,17 @@
   padding-top: 5px;
   padding-bottom: 5px;
   margin-bottom: 3px;
+  display: flex;
+}
+.item > div {
+
 }
 .itemBorderLeft {
   border-left: 3px solid rgb(51, 199, 23);
+  margin-right: 3px;
 }
 .itemBorderRight {
+  margin-left: 3px;
   border-right: 3px solid rgb(255, 105, 57);
 }
 .tabs {
@@ -324,15 +330,16 @@
 }
 
 /* Style the tab */
-.orderPlacerTab {
+.orderPlacerTab > button {
   background-color: rgba(186, 186, 186, 0.31);
+}
+.orderPlacerTab {
   width: 100%;
 }
 
 /* Style the buttons inside the tab */
 .orderPlacerTab button {
   display: block;
-  background-color: inherit;
   color: white;
   padding: 16px 16px;
   width: 100%;
@@ -373,6 +380,30 @@
   width: 70%;
   height: 300px;
 }
-.bankDropDown {
-  width: 100%
+.bankDropDown > div {
+  width: 100%;
+}
+.bankDropDown > div > button {
+  width: 100%;
+  background-color: #2f3d45 !important;
+  color: rgba(255, 255, 255, .7) !important;
+}
+.customInput > input {
+  width: 100%;
+  background-color: #404a52 !important;
+  color: rgba(255, 255, 255, .7) !important;
+}
+.customButtonStyles{
+  height: 100%;
+  width: 100%;
+  display: table;
+  text-align: center;
+  border-radius: 10px;
+}
+.customButtonStyles:hover {
+  cursor: pointer;
+}
+.disabledForm {
+  background-color: #2f3d45 !important;
+  color: rgba(255, 255, 255, 0.7) !important;
 }

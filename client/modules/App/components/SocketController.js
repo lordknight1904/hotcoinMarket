@@ -10,8 +10,9 @@ import { getId, getUserName, getCoin } from '../../App/AppReducer';
 import { setSocket, updateRate, getBalance } from '../AppActions';
 import { getSocket } from '../AppReducer';
 import ChatSocket from '../../../util/ChatSocket';
-import { getBuyMarket, getSellMarket, getMySellMarket, getMyBuyMarket } from '../../Home/HomeActions';
-import { updateTransactionDetail, getMyTradingMarket } from '../../Orders/OrderActions';
+import { getBuyMarket, getSellMarket, getMySellMarket, getMyBuyMarket, addBuyMarket, addMyBuyMarket, addSellMarket, addMySellMarket } from '../../Home/HomeActions';
+import { getMaxBuy, getMaxSell } from '../../Home/HomeReducer';
+import { updateTransactionDetail, getMyTradingMarket, addMyTradingMarket } from '../../Orders/OrderActions';
 import { getTransaction } from "../../Transaction/TransactionReducer";
 import { setTransaction } from "../../Transaction/TransactionActions";
 
@@ -27,8 +28,12 @@ export class SocketController extends Component {
             break;
           }
           case 'secondPhase': {
-            this.props.dispatch(getBuyMarket(this.props.coin));
-            this.props.dispatch(getSellMarket(this.props.coin));
+            this.props.dispatch(addMyBuyMarket([]));
+            this.props.dispatch(addMySellMarket([]));
+            this.props.dispatch(addMyTradingMarket([]));
+
+            this.props.dispatch(getBuyMarket(this.props.coin, this.props.maxBuy));
+            this.props.dispatch(getSellMarket(this.props.coin, this.props.maxSell));
             this.props.dispatch(getMyBuyMarket(this.props.coin, this.props.userName));
             this.props.dispatch(getMySellMarket(this.props.coin, this.props.userName));
             this.props.dispatch(getMyTradingMarket(this.props.coin, this.props.userName));
@@ -42,14 +47,14 @@ export class SocketController extends Component {
             break;
           }
           case 'donePhase': {
-            console.log('donePhase');
+            this.props.dispatch(addMyTradingMarket([]));
             this.props.dispatch(getMyTradingMarket(this.props.coin, this.props.userName));
             this.props.dispatch(getBalance(this.props.userName, message.coin));
             break;
           }
           case 'updateMarketList': {
-            this.props.dispatch(getBuyMarket(this.props.coin));
-            this.props.dispatch(getSellMarket(this.props.coin));
+            this.props.dispatch(getBuyMarket(this.props.coin, this.props.maxBuy));
+            this.props.dispatch(getSellMarket(this.props.coin, this.props.maxSell));
             break;
           }
           default: {
@@ -101,6 +106,8 @@ SocketController.propTypes = {
   coin: PropTypes.string.isRequired,
   userName: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
+  maxSell: PropTypes.number.isRequired,
+  maxBuy: PropTypes.number.isRequired,
 };
 // Retrieve data from store as props
 function mapStateToProps(state) {
@@ -110,6 +117,8 @@ function mapStateToProps(state) {
     transaction: getTransaction(state),
     coin: getCoin(state),
     socketIO: getSocket(state),
+    maxBuy: getMaxBuy(state),
+    maxSell: getMaxSell(state),
   };
 }
 

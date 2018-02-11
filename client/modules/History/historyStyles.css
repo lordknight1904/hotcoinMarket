@@ -1,0 +1,9 @@
+.table tr:nth-child(even) {
+  color: white;
+}
+.table > thead > tr{
+  color: white;
+}
+.table tr:nth-child(even):hover {
+  color: black;
+}

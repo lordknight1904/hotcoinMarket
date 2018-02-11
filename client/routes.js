@@ -19,6 +19,8 @@ if (process.env.NODE_ENV !== 'production') {
   require('./modules/Transaction/pages/Transaction');
   require('./modules/Wallet/pages/Wallet');
   require('./modules/Orders/pages/Orders');
+  require('./modules/Profile/pages/Profile');
+  require('./modules/History/pages/History');
 }
 
 export default (
@@ -51,6 +53,22 @@ export default (
       getComponent={(nextState, cb) => {
         require.ensure([], require => {
           cb(null, require('./modules/Wallet/pages/Wallet').default);
+        });
+      }}
+    />
+    <Route
+      path="profile"
+      getComponent={(nextState, cb) => {
+        require.ensure([], require => {
+          cb(null, require('./modules/Profile/pages/Profile').default);
+        });
+      }}
+    />
+    <Route
+      path="history"
+      getComponent={(nextState, cb) => {
+        require.ensure([], require => {
+          cb(null, require('./modules/History/pages/History').default);
         });
       }}
     />

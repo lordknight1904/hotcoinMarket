@@ -61,9 +61,7 @@ class Detail extends Component {
         userId: this.props.id,
         imageBase64: base64image.target.result,
       };
-      this.props.dispatch(marketThird(market)).then((res) => {
-        console.log(res);
-      });
+      this.props.dispatch(marketThird(market));
     };
   };
   onPay = () => {
@@ -152,7 +150,7 @@ class Detail extends Component {
                   Số lượng:&nbsp;
                 </span>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#ced2bb' }}>
-                  {`${numeral(detail.amount).format('0,0.[000000]')} ${detail.coin} | `}
+                  {`${numeral(detail.amount / unit).format('0,0.[000000]')} ${detail.coin} | `}
                 </span>
                 <span style={{ fontSize: '12px', fontStyle: 'italic', color: '#ced2bb' }}>
                   {

@@ -8,6 +8,7 @@ router.route('/user/google/activate').post(UserController.confirmGoogleAuth);
 router.route('/user/google/authorize').post(UserController.googleFactor);
 router.route('/user/google/cancel').post(UserController.cancelGoogleFactor);
 router.route('/user/balance/:userName/:coin').get(UserController.getBalance);
+router.route('/user/profile').put(UserController.updateUserProfile);
 router.route('*').get();
 
 export default router;

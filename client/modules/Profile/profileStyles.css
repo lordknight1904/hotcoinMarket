@@ -1,0 +1,6 @@
+.table {
+  margin-top: 50px;
+}
+.table > tbody > tr {
+  background-color: white;
+}

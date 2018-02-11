@@ -62,17 +62,26 @@ class Header extends Component {
         }
         break;
       }
+      case 'history': {
+        if (this.props.id === '' ) {
+          this.props.dispatch(onSignIn());
+        } else {
+          this.context.router.push('/history');
+        }
+        break;
+      }
       default: console.log(selectedKey);
     }
   };
   render() {
     return (
       <Navbar
+        inverse
         className={headerStyles.headerStyle}
       >
         <Navbar.Header>
           <Navbar.Brand>
-            <a onClick={this.onClick}>Chợ Hotcoin</a>
+            <a className={headerStyles.tagACursor} onClick={this.onClick}>Chợ Hotcoin</a>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
@@ -89,12 +98,13 @@ class Header extends Component {
               </Nav>
             ) : (
               <Nav pullRight onSelect={this.handleUser}>
+                <NavItem eventKey="history">Giao dịch đã hoàn thành</NavItem>
                 <NavItem eventKey="orders">Danh sách giao dịch đang thực hiện</NavItem>
                 <NavItem eventKey="wallet">Tổng hợp ví</NavItem>
                 <NavDropdown title={this.props.userName} id="basic-nav-dropdown">
-                  <MenuItem eventKey="profile">Profile</MenuItem>
+                  <MenuItem eventKey="profile">Hồ sơ</MenuItem>
                   <MenuItem divider />
-                  <MenuItem eventKey="logOut">Sign Out</MenuItem>
+                  <MenuItem eventKey="logOut">Đăng xuất</MenuItem>
                 </NavDropdown>
               </Nav>
             )

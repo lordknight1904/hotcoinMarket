@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { InputGroup, Button, FormGroup, FormControl } from 'react-bootstrap';
-import { getCoin } from '../../App/AppReducer';
+import { getCoin, getId } from '../../App/AppReducer';
 import {
   Step,
   Stepper,
@@ -24,7 +24,11 @@ class Transaction extends Component {
       stepIndex: 0,
     };
   }
-
+  componentWillMount() {
+    if (this.props.id === '' || !this.props.transaction.hasOwnProperty('_id')) {
+      this.context.router.push('/');
+    }
+  }
   handleNext = () => {
     const {stepIndex} = this.state;
     this.setState({
@@ -95,15 +99,18 @@ class Transaction extends Component {
 function mapStateToProps(state) {
   return {
     transaction: getTransaction(state),
+    id: getId(state),
   };
 }
 
 Transaction.propTypes = {
   dispatch: PropTypes.func.isRequired,
   transaction: PropTypes.object.isRequired,
+  id: PropTypes.string.isRequired,
 };
 
 Transaction.contextTypes = {
+  router: PropTypes.object,
 };
 
 export default connect(mapStateToProps)(Transaction);

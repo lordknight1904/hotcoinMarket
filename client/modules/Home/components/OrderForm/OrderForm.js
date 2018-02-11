@@ -34,6 +34,7 @@ class OrderForm extends Component {
               </button>
               <button
                 className={`${this.state.type === 'sell' ? homeStyles.orderPlacerTabSellActive : ''}`}
+                style={{ marginTop: '10px' }}
                 onClick={() => this.onType('sell')}
               >
                 Bán

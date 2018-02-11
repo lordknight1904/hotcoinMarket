@@ -31,7 +31,9 @@ export function updateTransactionDetail(transaction){
 export function marketThird(market) {
   return (dispatch) => {
     return callApi('market/third', 'post', '', {market}).then(res => {
-      dispatch(updateTransactionDetail(res.market));
+      if (res.market !== 'error' && res.market !== 'not ready') {
+        dispatch(updateTransactionDetail(res.market));
+      }
       return res.market;
     });
   };

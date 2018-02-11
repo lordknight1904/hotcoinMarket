@@ -34,10 +34,10 @@ const userSchema = new Schema({
   googleAuthentication: { type: 'Boolean', default: false },
   googleSecret: { type: 'Object', default: '' },
 
-  directHistory: [{
-    coin: { type: 'String', default: '' },
-    txHash: { type: 'String', default: '' },
-  }],
+  type: {
+    buy: { type: 'String', default: 'Người mua mới' },
+    sell: { type: 'String', default: 'Người bán mới' },
+  },
 
   dateCreated: { type: Date, default: Date.now },
 });

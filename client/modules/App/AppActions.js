@@ -16,6 +16,10 @@ export const ACTIONS = {
   LOGOUT: 'LOGOUT',
   UPDATE_RATE: 'UPDATE_RATE',
   SET_LATEST: 'SET_LATEST',
+  SET_IS_SUBMITTING: 'SET_IS_SUBMITTING',
+  SET_GOOGLE_AUTHENTICATOR: 'SET_GOOGLE_AUTHENTICATOR',
+  REFETCH_USER_PROFILE: 'REFETCH_USER_PROFILE',
+  ADD_SETTINGS: 'ADD_SETTINGS',
 };
 
 export function logout() {
@@ -83,6 +87,20 @@ export function fetchBanks() {
     });
   };
 }
+export function addSettings(settings) {
+  return {
+    type: ACTIONS.ADD_SETTINGS,
+    settings
+  };
+}
+export function fetchSettings() {
+  return (dispatch) => {
+    return callApi('setting', 'get', '').then(res => {
+      console.log(res);
+      dispatch(addSettings(res.settings));
+    });
+  };
+}
 
 export function updateBalanceAndHold(wallet) {
   return {
@@ -118,18 +136,81 @@ export function setSocket(socketIO) {
     socketIO
   };
 }
-export function setLatest(market) {
+export function setLatest(latest) {
   return {
     type: ACTIONS.SET_LATEST,
-    market
+    latest
   };
 }
 export function fetchLatest(coin) {
   return (dispatch) => {
     return callApi(`marketlatest/${coin}`, 'get', '' ).then(res => {
-      if (res.rate) {
-        dispatch(setLatest(res.market));
-      }
+
+      dispatch(setLatest(res.latest));
+    });
+  };
+}
+
+
+export function setGoogleAuthentication(googleAuthentication){
+  return {
+    type: ACTIONS.SET_GOOGLE_AUTHENTICATOR,
+    googleAuthentication
+  };
+}
+export function cancelGoogle(user) {
+  return () => {
+    return callApi('user/google/cancel', 'post', '', {user}).then(res => {
+      return res;
+    });
+  };
+}
+export function googleAuth(user) {
+  return () => {
+    return callApi('user/google/activate', 'post', '', {user}).then(res => {
+      return res;
+    });
+  };
+}
+export function updateProfile(profile) {
+  return () => {
+    return callApi('user/profile', 'put', '', {profile}).then(res => {
+      return res;
+    });
+  };
+}
+export function setIsSubmitting() {
+  return {
+    type: ACTIONS.SET_IS_SUBMITTING,
+  };
+}
+
+export function refetchUserProfile(user) {
+  return {
+    type: ACTIONS.REFETCH_USER_PROFILE,
+    user
+  };
+}
+
+export function googleFactor(user) {
+  return () => {
+    return callApi('user/google/authorize', 'post', '', {user}).then(res => {
+      return res;
+    });
+  };
+}
+
+export function directSend(send) {
+  return () => {
+    return callApi('market/send', 'post', '', {send}).then(res => {
+      return res;
+    });
+  };
+}
+export function createUser(user) {
+  return () => {
+    return callApi('user/create', 'post', '', {user}).then(res => {
+      return res;
     });
   };
 }

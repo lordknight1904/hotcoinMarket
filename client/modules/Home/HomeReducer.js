@@ -1,8 +1,6 @@
 // Import Actions
 import { ACTIONS } from './HomeActions';
-import cuid from 'cuid';
-import update from 'react-addons-update';
-import {REHYDRATE} from 'redux-persist/constants'
+import numeral from 'numeral';
 
 // Initial State
 const initialState = {
@@ -10,10 +8,17 @@ const initialState = {
   sell: [],
   myBuy: [],
   mySell: [],
+
+  maxBuy: 0,
+  maxSell: 0,
 };
 
 const HomeReducer = (state = initialState, action) => {
   switch (action.type) {
+    case ACTIONS.SET_MAX_BUY:
+      return { ...state, maxBuy: numeral(action.max).value() };
+    case ACTIONS.SET_MAX_SELL:
+      return { ...state, maxSell: numeral(action.max).value() };
     case ACTIONS.ADD_BUY:
       return { ...state, buy: action.market };
     case ACTIONS.ADD_SELL:
@@ -32,6 +37,8 @@ export const getBuy = state => state.home.buy;
 export const getSell = state => state.home.sell;
 export const getMyBuy = state => state.home.myBuy;
 export const getMySell = state => state.home.mySell;
+export const getMaxBuy = state => state.home.maxBuy;
+export const getMaxSell = state => state.home.maxSell;
 
 // Get showAddPost
 // Export Reducer

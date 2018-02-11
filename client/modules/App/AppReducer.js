@@ -38,10 +38,14 @@ const initialState = {
 
   socketIO: {},
   banks: [],
+  settings: [],
 };
 
 const AppReducer = (state = initialState, action) => {
   switch (action.type) {
+    case ACTIONS.ADD_SETTINGS: {
+      return {...state, settings: action.settings };
+    }
     case ACTIONS.LOGOUT: {
       return {...state, id: '', email: '', userName: '', token: ''};
     }
@@ -102,6 +106,8 @@ const AppReducer = (state = initialState, action) => {
         }
       };
     }
+    case ACTIONS.SET_GOOGLE_AUTHENTICATOR:
+      return { ...state, googleAuthentication: action.googleAuthentication };
     default:
       return state;
   }
@@ -130,6 +136,7 @@ export const getSocket = state => state.app.socketIO;
 
 export const getCoin = state => state.app.coin;
 export const getCoinList = state => state.app.coinList;
+export const getSettings = state => state.app.settings;
 
 // Get showAddPost
 // Export Reducer

@@ -5,6 +5,7 @@ import homeStyles from '../../../Home/home.css';
 import {changeCoin, fetchLatest, setLatest} from '../../AppActions';
 import { getCoin, getRates, getLatest } from '../../AppReducer';
 import numeral from 'numeral';
+import { Col, Row } from 'react-bootstrap';
 
 class Coin extends Component {
   constructor(props) {
@@ -15,7 +16,8 @@ class Coin extends Component {
   render() {
     const rate = this.props.rates[this.props.name];
     const latest = this.props.latest[this.props.name];
-    const last = (rate && rate.hasOwnProperty('last')) ? numeral(numeral(rate.last).value() * numeral(latest.rate).value()).foramt('0,0')  : '~';
+    const lastBuy = (rate && rate.hasOwnProperty('last')) ? numeral(numeral(rate.last).value() * numeral(latest && latest.hasOwnProperty('min') ? latest.min : 1).value()).format('0,0')  : '~';
+    const lastSell = (rate && rate.hasOwnProperty('last')) ? numeral(numeral(rate.last).value() * numeral(latest && latest.hasOwnProperty('max') ? latest.max : 1).value()).format('0,0')  : '~';
     return (
       <button
         className={`${this.props.coin === this.props.name ? homeStyles.tabActive : ''}`}
@@ -23,19 +25,19 @@ class Coin extends Component {
           this.props.dispatch(changeCoin(this.props.name));
         }}
       >
-        <div className="col-md-2 col-xs-2">
-          <div className="row">
+        <Col md={2} xs={2}>
+          <Row>
             {this.props.name}
-          </div>
-        </div>
-        <div className="col-md-10 col-xs-10">
-          <div className="row" style={{ color: 'rgb(255, 105, 57)', textAlign: 'right' }}>
-            {`${numeral(last).format('0,0')} đ`}
-          </div>
-          <div className="row" style={{ color: 'rgb(51, 199, 23)', textAlign: 'right' }}>
-            {`${numeral(last).format('0,0')} đ`}
-          </div>
-        </div>
+          </Row>
+        </Col>
+        <Col md={10} xs={10}>
+          <Row style={{ color: 'rgb(255, 105, 57)', textAlign: 'right' }}>
+            {`${numeral(lastSell).format('0,0')} đ`}
+          </Row>
+          <Row style={{ color: 'rgb(51, 199, 23)', textAlign: 'right' }}>
+            {`${numeral(lastBuy).format('0,0')} đ`}
+          </Row>
+        </Col>
       </button>
     );
   }

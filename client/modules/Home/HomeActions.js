@@ -7,8 +7,22 @@ export const ACTIONS = {
   ADD_BUY: 'ADD_BUY',
   ADD_MY_SELL: 'ADD_MY_SELL',
   ADD_MY_BUY: 'ADD_MY_BUY',
+  SET_MAX_BUY: 'SET_MAX_BUY',
+  SET_MAX_SELL: 'SET_MAX_SELL',
 };
 
+export function setMaxBuy(max){
+  return {
+    type: ACTIONS.SET_MAX_BUY,
+    max
+  };
+}
+export function setMaxSell(max){
+  return {
+    type: ACTIONS.SET_MAX_SELL,
+    max
+  };
+}
 export function createMarketOrder(market) {
   return () => {
     return callApi('market', 'post', '', {market}).then(res => {
@@ -29,16 +43,16 @@ export function addSellMarket(market){
     market
   };
 }
-export function getBuyMarket(coin) {
+export function getBuyMarket(coin, max) {
   return (dispatch) => {
-    return callApi(`market/${coin}/buy`, 'get', '').then(res => {
+    return callApi(`market/${coin}/buy?max=${max}`, 'get', '').then(res => {
       dispatch(addBuyMarket(res.market));
     });
   };
 }
-export function getSellMarket(coin) {
+export function getSellMarket(coin, max) {
   return (dispatch) => {
-    return callApi(`market/${coin}/sell`, 'get', '').then(res => {
+    return callApi(`market/${coin}/sell?max=${max}`, 'get', '').then(res => {
       dispatch(addSellMarket(res.market));
     });
   };
@@ -57,7 +71,7 @@ export function addMySellMarket(market){
 }
 export function getMyBuyMarket(coin, userName) {
   return (dispatch) => {
-    return callApi(`market/open/${coin}/${userName}/buy`, 'get', '').then(res => {
+    return callApi(`market/open/${coin}/${userName}/buy?`, 'get', '').then(res => {
       dispatch(addMyBuyMarket(res.market));
     });
   };

@@ -46,9 +46,9 @@ class SignUpDialog extends Component{
         this.setState({ isSigningUp: false });
         this.props.dispatch(onCloseSign());
         if (res.user.code === 'success') {
-          this.props.dispatch(setNotify('Sign up completed. \n Please check your email to activate account.'));
+          this.props.dispatch(setNotify('Đăng ký thành công. \n Vui lòng kiểm tra hòm thư để kích hoạt tài khoản.'));
         } else {
-          this.props.dispatch(setNotify('Account existed.'));
+          this.props.dispatch(setNotify('Tài khoản đã tồn tại.'));
         }
       });
     } else {

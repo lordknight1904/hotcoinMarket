@@ -8,7 +8,7 @@ import Chip from 'material-ui/Chip';
 import {blue300, indigo900} from 'material-ui/styles/colors';
 import numeral from 'numeral';
 import { setNotify } from '../../../App/AppActions';
-import { getUserName, getId, getRates, getCoin } from '../../../App/AppReducer';
+import { getUserName, getId, getRates, getCoin, getCoinList } from '../../../App/AppReducer';
 import { deleteMarketOrder, getMyBuyMarket, getMySellMarket } from '../../HomeActions';
 
 class Buy extends Component {
@@ -36,6 +36,9 @@ class Buy extends Component {
     const time = `${date.getDay()}/${date.getMonth()}/${date.getFullYear()} ${hours}:${minutes}`;
     const rate = this.props.rates[this.props.coin];
     const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
+
+    const coin = this.props.coinList.filter((c) => { return c.name === this.props.coin; });
+    const unit = (coin.length > 0) ? coin[0].unit : 0;
     return (
       <div className={`col-md-12 col-xs-12 ${homeStyles.item} ${bool ? homeStyles.itemBorderLeft : homeStyles.itemBorderRight}`}>
         <div className="col-md-10 col-xs-10">
@@ -59,22 +62,40 @@ class Buy extends Component {
                 Trong khoản:&nbsp;
               </span>
               <span style={{ fontWeight: 'bold', color: '#ced2bb' }}>
-                {`${detail.min} - ${detail.max} ${detail.coin}`}
+                {`${detail.min / unit} - ${detail.max / unit} ${detail.coin}`}
               </span>
             </div>
             <div className="col-md-12 col-xs-12">
               <span style={{ fontSize: '12px', fontStyle: 'italic', color: '#ced2bb' }}>
-                {`Ngày đặt: ${time}`}
                 Ngày đặt:&nbsp;
               </span>
               <span style={{ fontWeight: 'bold', color: '#ced2bb' }}>
-                 22/10/2017
+                {time}
               </span>
             </div>
           </div>
         </div>
         <div className="col-md-2 col-xs-2">
-          <Button onClick={() => this.onDelete(detail._id)}>Hủy</Button>
+          <div className="row" style={{ height: '100%' }}>
+            <div
+              className={homeStyles.customButtonStyles}
+              onClick={() => this.onDelete(detail._id)}
+              style={{
+                backgroundColor: 'white',
+              }}
+            >
+                <span
+                  style={{
+                    display: 'table-cell',
+                    color: '#333',
+                    fontSize: '18px',
+                    verticalAlign: 'middle',
+                  }}
+                >
+                  Hủy
+                </span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -86,6 +107,7 @@ function mapStateToProps(state) {
     id: getId(state),
     rates: getRates(state),
     coin: getCoin(state),
+    coinList: getCoinList(state),
   };
 }
 Buy.propTypes = {
@@ -95,6 +117,7 @@ Buy.propTypes = {
   id: PropTypes.string.isRequired,
   detail: PropTypes.object.isRequired,
   coin: PropTypes.string.isRequired,
+  coinList: PropTypes.array.isRequired,
   rates: PropTypes.object.isRequired,
 };
 Buy.contextTypes = {

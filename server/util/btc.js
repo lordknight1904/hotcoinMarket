@@ -7,6 +7,7 @@ import bigi from 'bigi';
 import bitcoin from 'bitcoinjs-lib';
 import buffer from 'buffer';
 import Order from '../models/order';
+import MarketOrder from '../models/marketOrder';
 import async from 'async';
 import numeral from 'numeral';
 
@@ -97,7 +98,25 @@ export function getHold(id) {
         order.map((o) => {
           hold += o.amountRemain;
         });
-        resolve(hold);
+        MarketOrder.find({
+          $or: [
+            { createUser: id, type: 'sell', stage: { $in: ['first', 'second', 'third']} },
+            { userId: id, type: 'buy', stage: { $in: ['second', 'third'] } }
+          ]
+        }).exec((err2, market) => {
+          if (err2) {
+            resolve(hold);
+          } else {
+            market.map((o) => {
+              if (o.type === 'sell') {
+                hold += o.max;
+              } else {
+                hold += o.amount;
+              }
+            });
+            resolve(hold);
+          }
+        });
       }
     });
   });
@@ -106,25 +125,31 @@ export function getHold(id) {
 // userFrom -> userTo
 //
 function findUsers(market, callback) {
+  let idFrom = '';
+  let idTo = '';
+  const type = market.type === 'sell';
+
+  idFrom = type ? market.createUser._id : market.userId._id ;
+  idTo = type ? market.userId._id : market.createUser._id;
   async.parallel({
-    userFrom: (cb) => { User.findOne({ _id: market.createUser._id }).exec(cb); },
-    userTo: (cb) => { User.findOne({ _id: market.userId._id }).exec(cb); }
+    userFrom: (cb) => { User.findOne({ _id: idFrom }).exec(cb); },
+    userTo: (cb) => { User.findOne({ _id: idTo }).exec(cb); }
   }, (err, result) => {
     callback(err, result.userFrom, result.userTo);
   });
 }
-export function send(market, addressCoin, feeTrade, feeNetwork) {
+export function send(market, addressCoin, feeTrade, minimumFeeCoin, feeNetwork) {
   return new Promise((resolve, reject) => {
     findUsers(market, (err, userFrom, userTo) => {
       if (err) {
-
+        reject(err);
       } else {
         const amount = market.amount;
         if (amount < 7000) return;
         if (amount < 4000000) {
-          microTransaction(userFrom, userTo, market, addressCoin, feeTrade, feeNetwork)
-            .catch((err) => {
-              reject(err);
+          microTransaction(userFrom, userTo, market, addressCoin, feeTrade, minimumFeeCoin, feeNetwork)
+            .catch((err2) => {
+              reject(err2);
             })
             .then(data => resolve(data));
           return;
@@ -136,25 +161,6 @@ export function send(market, addressCoin, feeTrade, feeNetwork) {
           .then(data => resolve(data))
       }
     });
-  });
-}
-export function transactionWithFee(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork) {
-  return new Promise((resolve, reject) => {
-    const amount = (orderSell.amountRemain <= orderBuy.amountRemain) ? orderSell.amountRemain : orderBuy.amountRemain;
-    if (amount < 7000) return;
-    if (amount < 4000000) {
-      microTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork)
-        .catch((err) => {
-          reject(err);
-        })
-        .then(data => resolve(data))
-      return;
-    }
-    normalTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork)
-      .catch((err) => {
-        reject(err);
-      })
-      .then(data => resolve(data))
   });
 }
 function normalTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, feeTrade, feeNetwork) {
@@ -205,9 +211,66 @@ function normalTransaction(userFrom, userTo, orderSell, orderBuy, addressFee, fe
     });
   });
 }
-function microTransaction(userFrom, userTo, market, addressFee, feeTrade, feeNetwork) {
+
+
+function createMicroTransaction(micro, microFee, callback) {
+  async.parallel({
+    micro: (cb) => createMicro(micro, cb),
+    microFee: (cb) => createMicro(microFee, cb)
+  }, (err, result) => {
+    callback(err, result.micro, result.microFee);
+  });
+}
+function createMicro(micro, cb) {
+  bcapi.microTX(micro, (err, data) => {
+    if (err) {
+      cb(err);
+      return;
+    } else {
+      if (data.hasOwnProperty('errors') || data.hasOwnProperty('error')) {
+        cb('not enough fund');
+        return;
+      }
+      cb(null, data);
+    }
+  });
+}
+function signTransactions(data, dataFee, addressFrom, callback) {
+  async.parallel({
+    data: (cb) => signTransaction(data, addressFrom, cb),
+    dataFee: (cb) => signTransaction(dataFee, addressFrom, cb)
+  }, (err, result) => {
+    callback(err, result.data, result.dataFee);
+  });
+}
+function signTransaction(data, addressFrom, cb) {
+  let keys = null;
+  keys = new bitcoin.ECPair(bigi.fromHex(addressFrom.private));
+  data.pubkeys = [];
+  data.signatures = data.tosign.map((tosign) => {
+    data.pubkeys.push(keys.getPublicKeyBuffer().toString('hex'));
+    return keys.sign(new buffer.Buffer(tosign, 'hex')).toDER().toString('hex');
+  });
+  bcapi.microTX(data, (err, ret) => {
+    if (err) {
+      cb('signError');
+    } else {
+      if (ret && !ret.hasOwnProperty('error')) {
+        cb(null, { txHash: ret.hash, fee: ret.fees });
+      } else {
+        cb('sendError');
+      }
+    }
+  });
+}
+function microTransaction(userFrom, userTo, market, addressFee, feeCoin, minimumFeeCoin, feeNetwork) {
   return new Promise((resolve, reject) => {
-    const amount = market.amount;
+    const initAmount = market.amount;
+    const feeTrade = (initAmount * (feeCoin * 2 / 100) >= (minimumFeeCoin * 2)) ? (initAmount * (feeCoin * 2 / 100)) : (minimumFeeCoin * 2);
+    const amount = initAmount - feeTrade;
+    console.log(initAmount);
+    console.log(amount);
+    console.log(feeTrade);
     const af = userFrom.addresses.filter((a) => {
       return a.coin === market.coin;
     });
@@ -221,35 +284,32 @@ function microTransaction(userFrom, userTo, market, addressFee, feeTrade, feeNet
       to_address: addressTo.address,
       value_satoshis: amount,
     };
-    bcapi.microTX(micro, (err, data) => {
+    const microFee = {
+      from_pubkey: addressFrom.public,
+      to_address: addressFee,
+      value_satoshis: feeTrade,
+    };
+    createMicroTransaction(micro, microFee, (err, micro, microFee) => {
       if (err) {
-        reject('transactionError');
+        console.log(err);
+        reject(err);
       } else {
-        if (data.hasOwnProperty('errors') || data.hasOwnProperty('error')) {
-          reject('transactionError');
-          return;
-        }
-
-        let keys = null;
-        keys = new bitcoin.ECPair(bigi.fromHex(addressFrom.private));
-        data.pubkeys = [];
-        data.signatures = data.tosign.map((tosign) => {
-          data.pubkeys.push(keys.getPublicKeyBuffer().toString('hex'));
-          return keys.sign(new buffer.Buffer(tosign, 'hex')).toDER().toString('hex');
-        });
-        bcapi.microTX(data, (err2, ret) => {
+        signTransactions(micro, microFee, addressFrom, (err2, data, dataFee) => {
           if (err2) {
-            reject('signError');
+            console.log(err2);
+            reject(err2);
           } else {
-            if (ret && !ret.hasOwnProperty('error')) {
-              resolve({ txHash: ret.hash, fee: ret.fees });
-            } else {
-              reject('sendError');
-            }
+            resolve({
+              txHash: data.txHash,
+              feeNetwork: data.fee,
+              txHashFee: dataFee.txHash,
+              feeTrade: feeTrade / 2,
+              feeTradeAdmin: feeTrade - dataFee.fee
+            });
           }
         });
       }
-    });
+    })
   });
 }
 export function directTransfer(addressFrom, addressPrivate, addressTo, transferAmount) {

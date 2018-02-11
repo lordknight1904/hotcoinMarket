@@ -9,7 +9,7 @@ import {blue300, indigo900} from 'material-ui/styles/colors';
 import { setTransaction } from '../../../Transaction/TransactionActions';
 import numeral from 'numeral';
 import { setNotify } from '../../../App/AppActions';
-import { getUserName, getId, getRates, getCoin } from '../../../App/AppReducer';
+import { getUserName, getId, getRates, getCoin, getCoinList } from '../../../App/AppReducer';
 import { marketFirst } from '../../HomeActions';
 
 const styles = {
@@ -53,11 +53,24 @@ class Detail extends Component {
       }
     });
   };
+// <Button
+// style={{
+//   backgroundColor: bool ? '#ff6939' : 'rgb(51, 199, 23)',
+//   borderColor: 'transparent'
+// }}
+// bsSize="large"
+// onClick={this.onClick}
+// >
+// {bool ? 'Bán' : 'Mua'}
+// </Button>
   render() {
     const bool = this.props.type === 'buy';
     const detail = this.props.detail;
     const rate = this.props.rates[this.props.coin];
     const last = (rate && rate.hasOwnProperty('last')) ? Math.round(rate.last) : 0;
+
+    const coin = this.props.coinList.filter((c) => { return c.name === this.props.coin; });
+    const unit = (coin.length > 0) ? coin[0].unit : 0;
     return (
       <div className={`col-md-12 col-xs-12 ${homeStyles.item} ${bool ? homeStyles.itemBorderLeft : homeStyles.itemBorderRight}`}>
         <div className="col-md-10 col-xs-10">
@@ -81,7 +94,7 @@ class Detail extends Component {
                 Tối đa:&nbsp;
               </span>
               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#ced2bb' }}>
-                {`${numeral(detail.max).format('0,0.[000000]')} ${detail.coin}`}
+                {`${numeral(numeral(detail.max).value() / unit).format('0,0.[000000]')} ${detail.coin}`}
               </span>
             </div>
             <div className="col-md-12 col-xs-12">
@@ -100,17 +113,25 @@ class Detail extends Component {
           </div>
         </div>
         <div className="col-md-2 col-xs-2">
-          <div className="row">
-            <Button
+          <div className="row" style={{ height: '100%' }}>
+            <div
+              className={homeStyles.customButtonStyles}
+              onClick={this.onClick}
               style={{
                 backgroundColor: bool ? '#ff6939' : 'rgb(51, 199, 23)',
-                borderColor: 'transparent'
               }}
-              bsSize="large"
-              onClick={this.onClick}
             >
-              {bool ? 'Bán' : 'Mua'}
-            </Button>
+              <span
+                style={{
+                  display: 'table-cell',
+                  color: '#333',
+                  fontSize: '18px',
+                  verticalAlign: 'middle',
+                }}
+              >
+                {bool ? 'Bán' : 'Mua'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -122,6 +143,7 @@ function mapStateToProps(state) {
     userName: getUserName(state),
     rates: getRates(state),
     coin: getCoin(state),
+    coinList: getCoinList(state),
     id: getId(state),
   };
 }
@@ -133,6 +155,7 @@ Detail.propTypes = {
   coin: PropTypes.string.isRequired,
   detail: PropTypes.object.isRequired,
   rates: PropTypes.object.isRequired,
+  coinList: PropTypes.array.isRequired,
 };
 Detail.contextTypes = {
   router: React.PropTypes.object,
