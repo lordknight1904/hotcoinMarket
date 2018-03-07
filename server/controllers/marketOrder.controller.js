@@ -12,6 +12,7 @@ import cuid from 'cuid';
 import { secondPhase, updateMarketOrders, thirdPhase, donePhase } from '../routes/socket_routes/chat_socket';
 import * as btc from '../util/btc';
 import * as rank from '../util/rank';
+import * as OrderTimer from '../util/orderTimer';
 
 export function getLatestRate(req, res) {
   MarketOrder.aggregate([
@@ -131,7 +132,6 @@ export function third(req, res) {
                         transaction: market,
                       };
                       thirdPhase(message);
-                      console.log('here');
                       rank.rankUser(market);
                       res.json({market: response});
                     } else {
@@ -223,6 +223,8 @@ export function done(req, res) {
                     }
                   });
                 }
+              } else {
+                res.json({ market: 'market not exist' });
               }
             }
           });
@@ -337,6 +339,7 @@ export function second(req, res) {
                               res.json({market: 'not ready'});
                             } else {
                               secondPhase(message);
+                              OrderTimer.addOrder(market2);
                               let response = market2;
                               const address = response.userId.addresses.filter((add) => {
                                 return add.coin === market.coin;
@@ -397,6 +400,7 @@ export function second(req, res) {
                                             res.json({market: 'not ready'});
                                           } else {
                                             secondPhase(message);
+                                            OrderTimer.addOrder(market2);
                                             let response = market2;
                                             const address = response.userId.addresses.filter((add) => {
                                               return add.coin === market.coin;
@@ -635,7 +639,6 @@ export function getMyTradingMarket(req, res) {
               //   };
               //   return r;
               // });
-              console.log(market);
               res.json({ market });
             }
           });

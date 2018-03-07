@@ -227,6 +227,7 @@ function createMicro(micro, cb) {
       cb(err);
       return;
     } else {
+      console.log(data);
       if (data.hasOwnProperty('errors') || data.hasOwnProperty('error')) {
         cb('not enough fund');
         return;
@@ -289,6 +290,8 @@ function microTransaction(userFrom, userTo, market, addressFee, feeCoin, minimum
       to_address: addressFee,
       value_satoshis: feeTrade,
     };
+    console.log(micro);
+    console.log(microFee);
     createMicroTransaction(micro, microFee, (err, micro, microFee) => {
       if (err) {
         console.log(err);

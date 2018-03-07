@@ -73,6 +73,7 @@ class Header extends Component {
       default: console.log(selectedKey);
     }
   };
+// <a className={headerStyles.tagACursor} onClick={this.onClick}>Chợ Hotcoin</a>
   render() {
     return (
       <Navbar
@@ -81,7 +82,9 @@ class Header extends Component {
       >
         <Navbar.Header>
           <Navbar.Brand>
-            <a className={headerStyles.tagACursor} onClick={this.onClick}>Chợ Hotcoin</a>
+            <a onClick={this.onClick} style={{ padding: '0' }}>
+              <img role="presentation" style={{ height: '50px' }} src="/logo/logo.svg" />
+            </a>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>

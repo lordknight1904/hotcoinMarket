@@ -79,9 +79,6 @@ class HistoryDetail extends Component {
           <Button bsStyle="info" bsSize="xsmall" onClick={() => this.props.onDetail(this.props.detail)}>
             C.tiết
           </Button>
-          <Button bsStyle="warning" bsSize="xsmall" disabled>
-            T.động
-          </Button>
         </th>
       </tr>
     );

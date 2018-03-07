@@ -8,6 +8,17 @@ var io = {};
 // Store static instance for another file import
 export var serverSocketStaticInstance = null;
 
+export function orderTimeOut(message) {
+  for (const socket in connections) {
+    if (connections[socket].userID.toString() === message.idFrom.toString() ||
+      connections[socket].userID.toString() === message.idTo.toString()
+    ) {
+      io.to(socket).emit('orderTimeOut', { code: 'orderTimeOut', coin: message.coin });
+    } else {
+      io.to(socket).emit('updateOrderList', { code: 'updateOrderList', coin: message.coin });
+    }
+  }
+}
 export function ordersAndHold(message) {
   for (const socket in connections) {
     if (connections[socket].userID.toString() === message.idFrom.toString() ||

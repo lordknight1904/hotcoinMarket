@@ -178,7 +178,7 @@ class CustomForm extends Component {
     return (
       <Form horizontal>
         <Row style={{ display: 'flex' }}>
-          <Col md={11} xs={11}>
+          <Col md={10} xs={10}>
             <FormGroup>
               <Col md={4}>
                 <FormControl className={homeStyles.disabledForm} id={`balanceForm${this.props.type}1`} type="text" value={balance} disabled placeholder="Số dư"/>
@@ -238,10 +238,10 @@ class CustomForm extends Component {
             </FormGroup>
           </Col>
           <Col md={1} xs={1} style={{ paddingBottom: '15px' }}>
-            <Row style={{ backgroundColor: 'red', height: '100%' }}>
+            <Row style={{ backgroundColor: 'red', height: '100%', borderRadius: '4px' }}>
               <label className={detailStyles.uploadLabel} style={{ height: '100%', width: '100%', marginBottom: '0', display: 'table' }} onClick={this.onClick}>
                 <div style={{ display: 'table-cell', verticalAlign: 'middle', paddingLeft: '10px' }}>
-                  <span style={{ paddingLeft: '7px' }}>Đặt</span>
+                  <span style={{ paddingLeft: '7px', color: 'white' }}>Đặt</span>
                 </div>
               </label>
             </Row>

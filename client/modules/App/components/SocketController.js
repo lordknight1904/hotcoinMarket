@@ -27,6 +27,11 @@ export class SocketController extends Component {
             this.props.dispatch(updateRate(message));
             break;
           }
+          case 'orderTimeOut': {
+            this.props.dispatch(setTransaction({}));
+            this.context.router.push('/');
+            break;
+          }
           case 'secondPhase': {
             this.props.dispatch(addMyBuyMarket([]));
             this.props.dispatch(addMySellMarket([]));
@@ -121,5 +126,8 @@ function mapStateToProps(state) {
     maxSell: getMaxSell(state),
   };
 }
+SocketController.contextTypes = {
+  router: PropTypes.object,
+};
 
 export default connect(mapStateToProps)(SocketController);

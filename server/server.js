@@ -20,6 +20,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(webpackHotMiddleware(compiler));
 }
 app.use('/public', Express.static('./public'));
+app.use('/logo', Express.static('./logo'));
 
 // React And Redux Setup
 import { configureStore } from '../client/store';

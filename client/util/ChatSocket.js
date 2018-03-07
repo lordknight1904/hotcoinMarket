@@ -6,8 +6,8 @@ export default class ChatSocket {
   constructor() {
     this.userID = null;
     this.connected = false;
-    this.socket = io.connect('http://localhost:8000');
-    // this.socket = io.connect('http://125.212.253.175:8000');
+    this.socket = io.connect('http://localhost:9000');
+    // this.socket = io.connect('http://125.212.253.175:9000');
   }
 
   doConnect(user) {
@@ -41,6 +41,9 @@ export default class ChatSocket {
       callback(message);
     });
     this.socket.on('updateMarketList', (message) => {
+      callback(message);
+    });
+    this.socket.on('orderTimeOut', (message) => {
       callback(message);
     });
   }

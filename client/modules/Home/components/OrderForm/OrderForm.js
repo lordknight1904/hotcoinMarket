@@ -24,17 +24,18 @@ class OrderForm extends Component {
     return (
       <Tab.Container id="left-tabs-example" activeKey={this.state.type} onSelect={() => {}}>
         <Row className="clearfix">
-          <Col md={1}>
+          <Col md={2}>
             <div className={homeStyles.orderPlacerTab}>
               <button
                 className={`${this.state.type === 'buy' ? homeStyles.orderPlacerTabBuyActive : ''}`}
                 onClick={() => this.onType('buy')}
+                style={{ borderRadius: '4px' }}
               >
                 Mua
               </button>
               <button
                 className={`${this.state.type === 'sell' ? homeStyles.orderPlacerTabSellActive : ''}`}
-                style={{ marginTop: '10px' }}
+                style={{ marginTop: '10px', borderRadius: '4px' }}
                 onClick={() => this.onType('sell')}
               >
                 Bán

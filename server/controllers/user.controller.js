@@ -121,7 +121,7 @@ export function createUser(req, res) {
             let content = '<div><p><span>Xin chào:  &nbsp; <b>';
             content += newUser.userName;
             content += '</b></span></p> <p>Đây là liên kết để bạn xác nhận tài khoản</p>';
-            content += `<a href="http://localhost:11212/user/confirm?token=${newUser._id}`;
+            content += `<a href="http://localhost:9000/user/confirm?token=${newUser._id}`;
             content += `" target="_blank">http://hotcoiniex.com/user/confirm?token=${newUser._id}`;
             content += '</a>';
             content += '<p>Liên kết chỉ có thể sử dụng 1 lần. Cảm ơn bạn đã đăng ký! </p>';

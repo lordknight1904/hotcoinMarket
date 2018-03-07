@@ -74,6 +74,7 @@ class Detail extends Component {
       userId: this.props.id,
     };
     this.setState({ isSubmitting: true });
+    console.log(market);
     this.props.dispatch(marketDone(market)).then((res) => {
       this.setState({ isSubmitting: false });
       console.log(res);
