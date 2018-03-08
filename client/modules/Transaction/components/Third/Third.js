@@ -5,6 +5,7 @@ import { InputGroup, Button, FormGroup, FormControl } from 'react-bootstrap';
 import tStyles from '../../transaction.css';
 import { getTransaction } from '../../TransactionReducer';
 import numeral from "numeral";
+import { getSettings } from "../../../App/AppReducer";
 
 class Third extends Component {
   constructor(props){
@@ -38,12 +39,14 @@ class Third extends Component {
 function mapStateToProps(state) {
   return {
     transaction: getTransaction(state),
+    settings: getSettings(state),
   };
 }
 
 Third.propTypes = {
   dispatch: PropTypes.func.isRequired,
   transaction: PropTypes.object.isRequired,
+  settings: PropTypes.array.isRequired,
 };
 
 Third.contextTypes = {
