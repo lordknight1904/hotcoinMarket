@@ -38,47 +38,51 @@ function updateUser(_id) {
       }
     })
 }
-function orderTimeUp(order) {
-  switch (order.stage) {
-    case 'second': {
-      MarketOrder.updateOne(
-        { _id: order._id },
-        { stage: 'open' }
-        )
-        .exec(() => {
-          const message = {
-            idFrom: order.userId._id,
-            idTo: order.createUser._id,
-            coin: order.coin,
-          };
+function orderTimeUp(o) {
+  MarketOrder.findOne({ _id: o._id }).exec((err, order) => {
+    if (!err && order) {
+      switch (order.stage) {
+        case 'second': {
+          MarketOrder.updateOne(
+            { _id: order._id },
+            { stage: 'open' }
+          )
+            .exec(() => {
+              const message = {
+                idFrom: order.userId._id,
+                idTo: order.createUser._id,
+                coin: order.coin,
+              };
+              updateUser(order.userId._id);
+              updateUser(order.createUser._id);
+              orderTimeOut(message);
+            });
+          break;
+        }
+        case 'third': {
+          MarketOrder.updateOne(
+            { _id: order._id },
+            { stage: 'conflict' }
+          ).exec(() => {
+            const message = {
+              idFrom: order.userId._id,
+              idTo: order.createUser._id,
+              coin: order.coin,
+            };
+            updateUser(order.userId._id);
+            updateUser(order.createUser._id);
+            orderTimeOut(message);
+          });
+          break;
+        }
+        default: {
           updateUser(order.userId._id);
           updateUser(order.createUser._id);
-          orderTimeOut(message);
-        });
-      break;
+          break;
+        }
+      }
     }
-    case 'third': {
-      MarketOrder.updateOne(
-        { _id: order._id },
-        { stage: 'conflict' }
-      ).exec(() => {
-        const message = {
-          idFrom: order.userId._id,
-          idTo: order.createUser._id,
-          coin: order.coin,
-        };
-        updateUser(order.userId._id);
-        updateUser(order.createUser._id);
-        orderTimeOut(message);
-      });
-      break;
-    }
-    default: {
-      updateUser(order.userId._id);
-      updateUser(order.createUser._id);
-      break;
-    }
-  }
+  });
 }
 export function addOrder(order) {
   orderTimers[order._id] = setTimeout(orderTimeUp, 60000, order);
