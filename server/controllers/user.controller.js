@@ -121,7 +121,7 @@ export function createUser(req, res) {
             let content = '<div><p><span>Xin chào:  &nbsp; <b>';
             content += newUser.userName;
             content += '</b></span></p> <p>Đây là liên kết để bạn xác nhận tài khoản</p>';
-            content += `<a href="http://localhost:9000/user/confirm?token=${newUser._id}`;
+            content += `<a href="http://125.212.253.77:9000/user/confirm?token=${newUser._id}`;
             content += `" target="_blank">http://hotcoiniex.com/user/confirm?token=${newUser._id}`;
             content += '</a>';
             content += '<p>Liên kết chỉ có thể sử dụng 1 lần. Cảm ơn bạn đã đăng ký! </p>';
@@ -152,6 +152,26 @@ export function createUser(req, res) {
     });
   } else {
     res.json({ user: { code: 'Thiếu thông tin.' } });
+  }
+}
+export function verifyUser(req, res) {
+  const token = req.query.token;
+  if (token !== '') {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - 15);
+    User.findOneAndUpdate({ _id: token, dateSent: { $gte: now } }, { emailVerified: true }, { new: true }).exec((err, user) => {
+      if (err) {
+        res.json({ user: 'error' });
+      } else {
+        if (user) {
+          res.json({ user: 'Activated' });
+        } else {
+          res.json({ user: 'Unable to activate' });
+        }
+      }
+    });
+  } else {
+    res.json({ user: 'error' });
   }
 }
 export function loginUser(req, res) {

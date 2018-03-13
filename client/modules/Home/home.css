@@ -4,8 +4,8 @@
   float: left;
   background-color: #2f3d45;
   width: 100%;
-  height: calc(100vh - 50px);
-  padding-top: 5px;
+  height: calc(100vh - 100px);
+  border-top: 2px solid #15232c;
 }
 
 /* Style the buttons inside the tab */
@@ -22,7 +22,9 @@
   transition: 0.3s;
   font-size: 17px;
 }
-
+.tab button:nth-child(odd) {
+  background-color: rgb(39, 52, 62);
+}
 /* Change background color of buttons on hover */
 .tab button:hover {
   background-color: rgb(30, 43, 52);
@@ -30,10 +32,10 @@
 
 /* Create an active/current "tab button" class */
 .tab button.active {
-  background-color: rgb(39, 52, 62);
+  background-color: rgb(30, 43, 52);
 }
 .tabActive {
-  background-color: rgb(39, 52, 62) !important;
+  background-color: rgb(30, 43, 52) !important;
 }
 /* Style the tab content */
 .tabContent {
@@ -316,10 +318,11 @@
   border-right: 3px solid rgb(255, 105, 57);
 }
 .tabs {
-  position: absolute;
   top: 0;
   right: 0;
   z-index: 100000;
+  border-top: 2px solid #15232c;
+  background-color: #2f3d45;
 }
 .tabs > div {
   background-color: rgb(39, 52, 62) !important;

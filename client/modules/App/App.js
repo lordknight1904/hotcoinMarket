@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 // Import Style
 import styles from './App.css';
+import { Tabs, Tab } from 'material-ui/Tabs';
 
 // Import Components
 import Helmet from 'react-helmet';
@@ -22,13 +23,15 @@ injectTapEventPlugin();
 import homeStyles from '../Home/home.css';
 import Coin from './components/Coin/Coin';
 import {  Modal } from 'react-bootstrap';
-import { getIsNotify, getMessage, getCoin } from '../App/AppReducer';
-import { closeNotify, fetchBanks, fetchRate, fetchLatest, fetchSettings } from '../App/AppActions';
+import { getIsNotify, getMessage, getCoin, getSlideIndex } from '../App/AppReducer';
+import { closeNotify, fetchBanks, fetchRate, fetchLatest, fetchSettings, setSlideIndex } from '../App/AppActions';
 
 export class App extends Component {
   constructor(props) {
     super(props);
-    this.state = { isMounted: false };
+    this.state = {
+      isMounted: false,
+    };
     this.muiThemeSetting = getMuiTheme(null, { userAgent: 'all' });
   }
 
@@ -48,6 +51,13 @@ export class App extends Component {
 
   onHide = () => {
     this.props.dispatch(closeNotify());
+  };
+  handleChange = (value) => {
+    // if (this.props.location )
+    if (this.props.location.pathname !== '/') {
+      this.context.router.push('/');
+    }
+    this.props.dispatch(setSlideIndex(value));
   };
   render() {
     return (
@@ -74,15 +84,30 @@ export class App extends Component {
             <div className="row">
               <div className="col-md-2 col-xs-12">
                 <div className="row">
+                  <Tabs
+                    className={homeStyles.tabs}
+                    onChange={this.handleChange}
+                    value={this.props.slideIndex}
+                  >
+                    <Tab label="Mua/bán" value={0} />
+                    <Tab label="Quản lý lệnh" value={1} />
+                  </Tabs>
                   <div className={homeStyles.tab}>
                     <Coin name="BTC" />
                     <Coin name="ETH" />
                     <Coin name="LTC" />
-                    <Coin name="DASH" />
                   </div>
                 </div>
               </div>
-              <div className="col-md-10 col-xs-12" style={{ height: 'calc(100vh - 50px)', backgroundColor: '#3a444d' }}>
+              <div
+                className="col-md-10 col-xs-12"
+                style={{
+                  height: 'calc(100vh - 50px)',
+                  backgroundColor: '#3a444d',
+                  borderLeft: '2px solid #15232c',
+                  borderTop: '2px solid #15232c',
+                }}
+              >
                 {this.props.children}
               </div>
             </div>
@@ -112,15 +137,20 @@ App.propTypes = {
   isNotify: PropTypes.bool.isRequired,
   message: PropTypes.string.isRequired,
   coin: PropTypes.string.isRequired,
+  slideIndex: PropTypes.number.isRequired,
 };
 
 // Retrieve data from store as props
 function mapStateToProps(store) {
   return {
+    slideIndex: getSlideIndex(store),
     isNotify: getIsNotify(store),
     message: getMessage(store),
     coin: getCoin(store),
   };
 }
+App.contextTypes = {
+  router: PropTypes.object,
+};
 
 export default connect(mapStateToProps)(App);

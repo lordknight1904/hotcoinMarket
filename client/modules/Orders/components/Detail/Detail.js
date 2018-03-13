@@ -184,7 +184,7 @@ class Detail extends Component {
             <div className="row" style={{ height: '100%' }}>
               <div className="col-md-12 col-xs-12" style={{ color: 'white', height: '50%', display: 'table', backgroundColor: 'green' }}>
                 <span style={{ display: 'table-cell', verticalAlign: 'middle' }} onClick={() => this.props.openDetail(detail)}>
-                Chi tiết
+                  Chi tiết
                 </span>
               </div>
               <div className="col-md-12 col-xs-12" style={{ color: 'white', height: '50%', backgroundColor: 'red', paddingLeft: '0', paddingRight: '0' }}>

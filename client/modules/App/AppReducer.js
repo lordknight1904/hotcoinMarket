@@ -39,10 +39,15 @@ const initialState = {
   socketIO: {},
   banks: [],
   settings: [],
+
+  slideIndex: 0,
 };
 
 const AppReducer = (state = initialState, action) => {
   switch (action.type) {
+    case ACTIONS.SET_SLIDE_INDEX: {
+      return {...state, slideIndex: action.slideIndex };
+    }
     case ACTIONS.ADD_SETTINGS: {
       return {...state, settings: action.settings };
     }
@@ -137,6 +142,7 @@ export const getSocket = state => state.app.socketIO;
 export const getCoin = state => state.app.coin;
 export const getCoinList = state => state.app.coinList;
 export const getSettings = state => state.app.settings;
+export const getSlideIndex = state => state.app.slideIndex;
 
 // Get showAddPost
 // Export Reducer

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { InputGroup, Button, FormGroup, FormControl } from 'react-bootstrap';
-import { Tabs, Tab } from 'material-ui/Tabs';
 import homeStyles from '../home.css';
 import List from '../components/List/List';
 import Open from '../components/Open/Open';
@@ -10,7 +9,7 @@ import SwipeableViews from 'react-swipeable-views';
 import OrderForm from '../components/OrderForm/OrderForm';
 import { getBuyMarket, getSellMarket, setMaxBuy, setMaxSell } from '../HomeActions';
 import { getMaxSell, getMaxBuy } from '../HomeReducer';
-import { getId, getRates, getCoin, getLatest } from '../../App/AppReducer';
+import { getId, getRates, getCoin, getLatest, getSlideIndex } from '../../App/AppReducer';
 import numeral from 'numeral';
 
 class Home extends Component {
@@ -22,11 +21,6 @@ class Home extends Component {
       oldMaxSell: '',
     };
   }
-  handleChange = (value) => {
-    this.setState({
-      slideIndex: value,
-    });
-  };
   componentDidMount() {
     this.props.dispatch(getBuyMarket(this.props.coin, this.props.maxBuy));
     this.props.dispatch(getSellMarket(this.props.coin, this.props.maxSell));
@@ -85,16 +79,8 @@ class Home extends Component {
     const lastSell = (rate && rate.hasOwnProperty('last')) ? (rate.last) * ((latest && latest.hasOwnProperty('max') ? latest.max : 1)) : 0;
     return (
     <div className="row">
-      <Tabs
-        className={homeStyles.tabs}
-        onChange={this.handleChange}
-        value={this.state.slideIndex}
-      >
-        <Tab label="Mua/bán" value={0} />
-        <Tab label="Quản lý lệnh" value={1} />
-      </Tabs>
       <SwipeableViews
-        index={this.state.slideIndex}
+        index={this.props.slideIndex}
         onChangeIndex={this.handleChange}
       >
         <div className="col-md-12 col-xs-12">
@@ -208,6 +194,7 @@ class Home extends Component {
 function mapStateToProps(state) {
   return {
     coin: getCoin(state),
+    slideIndex: getSlideIndex(state),
     rates: getRates(state),
     id: getId(state),
     latest: getLatest(state),

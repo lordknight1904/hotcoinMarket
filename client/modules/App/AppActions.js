@@ -20,8 +20,15 @@ export const ACTIONS = {
   SET_GOOGLE_AUTHENTICATOR: 'SET_GOOGLE_AUTHENTICATOR',
   REFETCH_USER_PROFILE: 'REFETCH_USER_PROFILE',
   ADD_SETTINGS: 'ADD_SETTINGS',
+  SET_SLIDE_INDEX: 'SET_SLIDE_INDEX',
 };
 
+export function setSlideIndex(slideIndex) {
+  return {
+    type: ACTIONS.SET_SLIDE_INDEX,
+    slideIndex
+  };
+}
 export function logout() {
   return {
     type: ACTIONS.LOGOUT,

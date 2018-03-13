@@ -1,6 +1,13 @@
 .table {
-  margin-top: 50px;
+  margin-top: 70px;
 }
 .table > tbody > tr {
-  background-color: white;
+  background-color: transparent;
+}
+.table > tbody > tr:hover {
+  background-color: transparent;
+  color: black;
+}
+.table tr {
+  color: white;
 }

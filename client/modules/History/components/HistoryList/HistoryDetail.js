@@ -67,16 +67,16 @@ class HistoryDetail extends Component {
     const multi = (this.props.id === detail.userId._id) ? 2 : 1;
     return (
       <tr>
-        <th>{(detail.stage !== 'done' || detail.conflict) ? timeStr : '~'}</th>
+        <th>{(detail.stage === 'done' || detail.stage === 'open' || detail.conflict) ? '~' : timeStr}</th>
         <th>{detail.createUser ? detail.createUser.userName : '~'}</th>
         <th>{this.onTranslate(detail.type)}</th>
-        <th>{detail.userId ? detail.userId.userName : '~'}</th>
+        <th>{(detail.userId && detail.stage !== 'open') ? detail.userId.userName : '~'}</th>
         <th>{this.onTranslate(detail.stage)}</th>
         <th>{numeral((detail.amount - detail.feeTrade * multi) / unit).format('0,0.[000000]')}</th>
         <th>{numeral(detail.feeNetwork / unit).format('0,0.[000000]')}</th>
         <th>{numeral(detail.feeTrade / unit).format('0,0.[000000]')}</th>
         <th>
-          <Button bsStyle="info" bsSize="xsmall" onClick={() => this.props.onDetail(this.props.detail)}>
+          <Button bsStyle="success" bsSize="xsmall" onClick={() => this.props.onDetail(this.props.detail)}>
             C.tiết
           </Button>
         </th>

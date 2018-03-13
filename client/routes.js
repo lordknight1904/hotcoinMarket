@@ -41,6 +41,14 @@ export default (
       }}
     />
     <Route
+      path="user/confirm"
+      getComponent={(nextState, cb) => {
+        require.ensure([], require => {
+          cb(null, require('./modules/User/pages/Confirm').default);
+        });
+      }}
+    />
+    <Route
       path="transaction"
       getComponent={(nextState, cb) => {
         require.ensure([], require => {

@@ -1,17 +1,31 @@
 .pHover:hover {
   text-decoration: underline;
+  cursor: pointer;
   color: red;
 }
 .pHover {
-  color: blue;
+  color: #526fff;
 }
 .tableStripped > tbody> tr:nth-child(even) {
   background-color: rgba(9, 186, 193, 0.38) !important;
   color: white !important;
 }
 .table {
-  padding-top: 20px;
+  border-color: transparent !important;
+  margin-top: 10px;
+}
+.table tr > th{
+  border: none !important;
 }
 .table > thead {
   color: white;
+}
+.table tr {
+  color: white;
+}
+.table tr:nth-child(odd) {
+  background-color: rgb(71, 91, 109) !important;
+}
+.table tr:nth-child(even) {
+  background-color: rgb(107, 119, 134) !important;
 }

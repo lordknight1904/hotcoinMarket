@@ -1,9 +1,20 @@
-.table tr:nth-child(even) {
+.table {
+  border-color: transparent !important;
+  margin: 10px 10px 0 10px;
+}
+.table tr{
+  border-color: transparent !important;
   color: white;
 }
-.table > thead > tr{
-  color: white;
+.table tr > th{
+  border: none !important;
 }
-.table tr:nth-child(even):hover {
+.table tr:hover {
   color: black;
+}
+.table tr:nth-child(odd) {
+  background-color: rgb(71, 91, 109) !important;
+}
+.table tr:nth-child(even) {
+  background-color: rgb(107, 119, 134) !important;
 }

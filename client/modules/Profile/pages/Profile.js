@@ -166,6 +166,9 @@ class Profile extends Component{
                     <td style={{ width: '80%' }}>
                       <FormGroup style={{ marginBottom: '0' }} >
                         <FormControl
+                          style={{
+                            backgroundColor: '#404a52'
+                          }}
                           disabled={this.props.isSubmitting || this.props.approved}
                           type="text"
                           value={this.state.realName}
@@ -185,6 +188,9 @@ class Profile extends Component{
                     <td>
                       <FormGroup style={{ marginBottom: '0' }} >
                         <FormControl
+                          style={{
+                            backgroundColor: '#404a52'
+                          }}
                           disabled={this.props.isSubmitting || this.props.approved}
                           type="text"
                           value={this.state.phone}

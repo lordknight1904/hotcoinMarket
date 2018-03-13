@@ -9,6 +9,7 @@ router.route('/user/google/authorize').post(UserController.googleFactor);
 router.route('/user/google/cancel').post(UserController.cancelGoogleFactor);
 router.route('/user/balance/:userName/:coin').get(UserController.getBalance);
 router.route('/user/profile').put(UserController.updateUserProfile);
+router.route('/user/confirm').get(UserController.verifyUser);
 router.route('*').get();
 
 export default router;

@@ -73,6 +73,9 @@ class Header extends Component {
       default: console.log(selectedKey);
     }
   };
+  chuyenPage = () => {
+    window.open('http://www.hotcoinex.com', '_blank');
+  };
 // <a className={headerStyles.tagACursor} onClick={this.onClick}>Chợ Hotcoin</a>
   render() {
     return (
@@ -90,7 +93,7 @@ class Header extends Component {
         </Navbar.Header>
 
         <Navbar.Collapse>
-          <Nav pullRight>
+          <Nav pullRight onSelect={this.chuyenPage}>
             <NavItem>Hotcoin Exchange</NavItem>
           </Nav>
           {
@@ -102,7 +105,7 @@ class Header extends Component {
             ) : (
               <Nav pullRight onSelect={this.handleUser}>
                 <NavItem eventKey="history">Giao dịch đã hoàn thành</NavItem>
-                <NavItem eventKey="orders">Danh sách giao dịch đang thực hiện</NavItem>
+                <NavItem eventKey="orders">Giao dịch đang thực hiện</NavItem>
                 <NavItem eventKey="wallet">Tổng hợp ví</NavItem>
                 <NavDropdown title={this.props.userName} id="basic-nav-dropdown">
                   <MenuItem eventKey="profile">Hồ sơ</MenuItem>
