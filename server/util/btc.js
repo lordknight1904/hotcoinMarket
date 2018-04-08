@@ -1,6 +1,6 @@
 import bcypher from 'blockcypher';
 import User from '../models/user';
-const bcapi = new bcypher('bcy', 'test', 'bfb3f2a39e264f90a596afd2853edb10');
+const bcapi = new bcypher('bcy', 'test', '9f144d98e3f1497087b2c9f3381eb47b');
 
 import bigi from 'bigi';
 

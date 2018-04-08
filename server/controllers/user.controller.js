@@ -14,6 +14,7 @@ import imageminJpegtran from 'imagemin-jpegtran';
 import imageminPngquant from 'imagemin-pngquant';
 import cuid from 'cuid';
 import fs from 'fs';
+import request from 'request';
 
 function generateToken(user) {
   const u = {
@@ -113,7 +114,7 @@ export function createUser(req, res) {
               port: 465,
               secure: true, // secure:true for port 465, secure:false for port 587
               auth: {
-                user: 'virinex1904@gmail.com',
+                user: 'hitcoinexvn@gmail.com',
                 pass: 'Apink1904'
                 // pass: 'cwslawgrwfrsurrl'
               }
@@ -121,8 +122,8 @@ export function createUser(req, res) {
             let content = '<div><p><span>Xin chào:  &nbsp; <b>';
             content += newUser.userName;
             content += '</b></span></p> <p>Đây là liên kết để bạn xác nhận tài khoản</p>';
-            content += `<a href="http://125.212.253.77:9000/user/confirm?token=${newUser._id}`;
-            content += `" target="_blank">http://hotcoiniex.com/user/confirm?token=${newUser._id}`;
+            content += `<a href="http://35.187.254.106:9000/user/confirm?token=${newUser._id}`;
+            content += `" target="_blank">http://hotcoinex.com/user/confirm?token=${newUser._id}`;
             content += '</a>';
             content += '<p>Liên kết chỉ có thể sử dụng 1 lần. Cảm ơn bạn đã đăng ký! </p>';
             content += '</div>';
@@ -141,6 +142,7 @@ export function createUser(req, res) {
             transporter.sendMail(mailOptions, (error, info) => {
               if (error) {
                 console.log(error);
+                res.json({ user: { code: 'success' } });
               } else {
                 console.log('Message %s sent: %s', info.messageId, info.response);
                 res.json({ user: { code: 'success' } });
@@ -485,4 +487,13 @@ export function updateUserProfile(req, res) {
   } else {
     res.json({ profile: 'missing' });
   }
+}
+export function getAccountName(req, res) {
+  request.get({
+    url: `https://santienao.com/api/v1/bank_accounts/${req.params.account}`,
+    json: true,
+    strictSSL:true,
+  }, (error, response, body) => {
+    res.json({account: body});
+  });
 }

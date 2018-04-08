@@ -27,11 +27,11 @@ class Home extends Component {
   }
   componentWillReceiveProps(nextProps) {
     if (this.state.oldMaxBuy !== nextProps.maxBuy) {
-      this.props.dispatch(getBuyMarket(this.props.coin, nextProps.maxBuy));
+      this.props.dispatch(getBuyMarket(nextProps.coin, nextProps.maxBuy));
       this.setState({ maxBuy: nextProps.maxBuy });
     }
     if (this.state.oldMaxSell !== nextProps.maxSell) {
-      this.props.dispatch(getSellMarket(this.props.coin, nextProps.maxSell));
+      this.props.dispatch(getSellMarket(nextProps.coin, nextProps.maxSell));
       this.setState({ maxSell: nextProps.maxSell });
     }
   }

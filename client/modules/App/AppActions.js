@@ -103,7 +103,6 @@ export function addSettings(settings) {
 export function fetchSettings() {
   return (dispatch) => {
     return callApi('setting', 'get', '').then(res => {
-      console.log(res);
       dispatch(addSettings(res.settings));
     });
   };

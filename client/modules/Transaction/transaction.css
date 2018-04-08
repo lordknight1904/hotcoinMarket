@@ -8,8 +8,12 @@
   text-align: center;
 }
 .textBox {
-  background-color: #404a52;
+  background-color: #404a52 !important;
   color: white;
+}
+.textBox2 {
+  background-color: #404a52 !important;
+  color: black;
 }
 .table {
   color: white;

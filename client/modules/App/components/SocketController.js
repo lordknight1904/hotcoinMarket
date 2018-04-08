@@ -18,7 +18,6 @@ import { setTransaction } from "../../Transaction/TransactionActions";
 
 export class SocketController extends Component {
   componentDidMount() {
-    console.log('SocketController');
     Promise.resolve(this.props.dispatch(setSocket(new ChatSocket()))).then(() => {
       this.isDidMount = true;
       this.props.socketIO.listening((message) => {

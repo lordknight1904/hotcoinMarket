@@ -1,6 +1,6 @@
 import bcypher from 'blockcypher';
 
-const ethapi = new bcypher('beth', 'test', '7d52d8baf3554ecfa0884b9669459e1e');
+const ethapi = new bcypher('beth', 'test', '9f144d98e3f1497087b2c9f3381eb47b');
 
 import bigi from 'bigi';
 

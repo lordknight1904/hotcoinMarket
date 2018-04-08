@@ -20,3 +20,13 @@ export function marketSecond(market) {
     });
   };
 }
+export function getBankAccount(account, counter) {
+  return () => {
+    return callApi(`user/account/${account}`, 'get', '').then(res => {
+      return {
+        res,
+        counter,
+      }
+    });
+  };
+}

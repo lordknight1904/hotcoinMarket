@@ -1,6 +1,6 @@
 import bcypher from 'blockcypher';
 
-const usdt = new bcypher('bcy', 'test', '54f58bb28ee74b419188f503b0bf250f');
+const usdt = new bcypher('bcy', 'test', '9f144d98e3f1497087b2c9f3381eb47b');
 
 import bigi from 'bigi';
 

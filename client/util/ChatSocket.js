@@ -6,8 +6,8 @@ export default class ChatSocket {
   constructor() {
     this.userID = null;
     this.connected = false;
-    this.socket = io.connect('http://localhost:9000');
-    // this.socket = io.connect('http://125.212.253.175:9000');
+    // this.socket = io.connect('http://localhost:9000');
+    this.socket = io.connect('http://market.hotcoinex.com');
   }
 
   doConnect(user) {

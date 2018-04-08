@@ -5,7 +5,7 @@ import { InputGroup, Button, FormGroup, FormControl, Form, Col } from 'react-boo
 import numeral from 'numeral';
 import tStyles from '../../transaction.css';
 import { getTransaction } from '../../TransactionReducer';
-import { marketSecond, setTransaction } from '../../TransactionActions';
+import { marketSecond, setTransaction, getBankAccount } from '../../TransactionActions';
 import { getId, getCoin, getRates, getCoinList, getSettings } from '../../../App/AppReducer';
 import { setNotify } from '../../../App/AppActions';
 
@@ -16,6 +16,8 @@ class First extends Component {
       amount: '',
       accountNumber: '',
       accountName: '',
+
+      counter: 0,
     };
   }
   onAmount = (event) => {
@@ -40,11 +42,18 @@ class First extends Component {
     this.setState({ address: event.target.value });
   };
   onAccountNumber = (event) => {
-    this.setState({ accountNumber: event.target.value });
+    this.props.dispatch(getBankAccount(event.target.value, this.state.counter)).then((res) => {
+      if (res.res.account.state === 'fetched' && res.counter === this.state.counter - 1) {
+        this.setState({ accountName:  res.res.account.account_name });
+      } else {
+        this.setState({ accountName:  '' });
+      }
+    });
+    this.setState({ accountNumber: event.target.value, counter: this.state.counter + 1 });
   };
-  onAccountName = (event) => {
-    this.setState({ accountName: event.target.value });
-  };
+  // onAccountName = (event) => {
+  //   this.setState({ accountName: event.target.value });
+  // };
   onClick = () => {
     const t = this.props.transaction;
     const coin = this.props.coinList.filter((c) => { return c.name === t.coin; });
@@ -142,7 +151,7 @@ class First extends Component {
                   <Col sm={6}>
                     {
                       typeBool ? (
-                        <FormControl className={tStyles.textBox} type="text" value={this.state.accountName} onChange={this.onAccountName} autoComplete="off" placeholder="Tên chủ tài khoản"/>
+                        <FormControl className={tStyles.textBox} type="text" value={this.state.accountName} disabled placeholder="Tên chủ tài khoản"/>
                       ) : ''
                     }
                   </Col>

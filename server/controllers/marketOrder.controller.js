@@ -11,6 +11,7 @@ import imageminPngquant from 'imagemin-pngquant';
 import cuid from 'cuid';
 import { secondPhase, updateMarketOrders, thirdPhase, donePhase } from '../routes/socket_routes/chat_socket';
 import * as btc from '../util/btc';
+import * as eth from '../util/eth';
 import * as rank from '../util/rank';
 import * as OrderTimer from '../util/orderTimer';
 

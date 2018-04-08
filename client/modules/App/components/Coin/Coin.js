@@ -6,6 +6,7 @@ import {changeCoin, fetchLatest, setLatest} from '../../AppActions';
 import { getCoin, getRates, getLatest } from '../../AppReducer';
 import numeral from 'numeral';
 import { Col, Row } from 'react-bootstrap';
+import { addSellMarket, addBuyMarket } from "../../../Home/HomeActions";
 
 class Coin extends Component {
   constructor(props) {
@@ -22,6 +23,8 @@ class Coin extends Component {
       <button
         className={`${this.props.coin === this.props.name ? homeStyles.tabActive : ''}`}
         onClick={() => {
+          this.props.dispatch(addBuyMarket([]));
+          this.props.dispatch(addSellMarket([]));
           this.props.dispatch(changeCoin(this.props.name));
         }}
       >

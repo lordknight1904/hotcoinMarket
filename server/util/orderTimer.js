@@ -5,7 +5,7 @@ import { orderTimeOut } from '../routes/socket_routes/chat_socket';
 let orderTimers = {};
 
 function updateUser(_id) {
-  console.log('here');
+  if (!_id) return;
   MarketOrder.find({ $or: [{ createUser: _id } , { userId: _id }, { stage: 'done' } , { stage: 'conflict' }] })
     .sort({ dateCreate: -1 })
     .limit(5)
